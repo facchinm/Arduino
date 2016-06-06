@@ -93,6 +93,51 @@
   <property name="AVRDUDE-VERSION" value="6.3.0-arduino9" />
   <property name="arduinoOTA-VERSION" value="1.1.1" />
 
+  <property name="ARDUINO_TOOLS_BASE_URL" value="http://downloads.arduino.cc/tools/"/>
+  <property name="ARDUINO_CORE_BASE_URL" value="http://downloads.arduino.cc/cores/"/>
+
+  <property name="BUNDLED_CORE" value="avr"/>
+  <property name="BUNDLED_CORE_MAINTAINER" value="arduino"/>
+  <property name="BUNDLED_CORE_VERSION" value="git"/>
+  <property name="BUNDLED_CORE_ARCHIVE" value="none"/>
+  <property name="BUNDLED_CORE_SHA256" value="none"/>
+  <property name="BUNDLED_CORE_URL" value="${ARDUINO_CORE_BASE_URL}/${BUNDLED_CORE_ARCHIVE}"/>
+
+  <property name="BUNDLED_COMPILER" value="avr-gcc"/>
+  <property name="BUNDLED_COMPILER_VERSION" value="4.8.1-arduino5"/>
+  <property name="BUNDLED_COMPILER_BASEURL" value="${ARDUINO_TOOLS_BASE_URL}"/>
+
+  <property name="BUNDLED_TOOL1" value="avrdude"/>
+  <property name="BUNDLED_TOOL1_VERSION" value="6.0.1-arduino5"/>
+  <property name="BUNDLED_TOOL1_BASEURL" value="${ARDUINO_TOOLS_BASE_URL}"/>
+
+  <property name="BUNDLED_TOOL2" value="none"/>
+  <property name="BUNDLED_TOOL2_VERSION" value="none"/>
+
+  <property name="MACOSX_BUNDLED_COMPILER_ARCHIVE" value="${BUNDLED_COMPILER}-${BUNDLED_COMPILER_VERSION}-i386-apple-darwin11.tar.bz2"/>
+  <property name="WINDOWS_BUNDLED_COMPILER_ARCHIVE" value="${BUNDLED_COMPILER}-${BUNDLED_COMPILER_VERSION}-i686-mingw32.zip"/>
+  <property name="LINUX32_BUNDLED_COMPILER_ARCHIVE" value="${BUNDLED_COMPILER}-${BUNDLED_COMPILER_VERSION}-i686-pc-linux-gnu.tar.bz2"/>
+  <property name="LINUX64_BUNDLED_COMPILER_ARCHIVE" value="${BUNDLED_COMPILER}-${BUNDLED_COMPILER_VERSION}-x86_64-pc-linux-gnu.tar.bz2"/>
+  <property name="LINUXARM_BUNDLED_COMPILER_ARCHIVE" value="${BUNDLED_COMPILER}-${BUNDLED_COMPILER_VERSION}-armhf-pc-linux-gnu.tar.bz2"/>
+
+  <property name="MACOSX_BUNDLED_COMPILER_SHA256" value="111b3ef00d737d069eb237a8933406cbb928e4698689e24663cffef07688a901"/>
+  <property name="WINDOWS_BUNDLED_COMPILER_SHA256" value="d4303226a7b41d3c445d901b5aa5903458def3fc7b7ff4ffef37cabeb37d424d"/>
+  <property name="LINUX32_BUNDLED_COMPILER_SHA256" value="7648b7f549b37191da0b0be53bae791b652f82ac3cb4e7877f85075aaf32141f"/>
+  <property name="LINUX64_BUNDLED_COMPILER_SHA256" value="9054fcc174397a419ba56c4ce1bfcbcad275a6a080cc144905acc9b0351ee9cc"/>
+  <property name="LINUXARM_BUNDLED_COMPILER_SHA256" value="c8ffcd2db7a651b48ab4ea19db4b34fbae3e7f0210a0f294592af2bdabf2154b"/>
+
+  <property name="MACOSX_BUNDLED_TOOL1_ARCHIVE" value="${BUNDLED_TOOL1}-${BUNDLED_TOOL1_VERSION}-i386-apple-darwin11.tar.bz2"/>
+  <property name="WINDOWS_BUNDLED_TOOL1_ARCHIVE" value="${BUNDLED_TOOL1}-${BUNDLED_TOOL1_VERSION}-i686-mingw32.zip"/>
+  <property name="LINUX32_BUNDLED_TOOL1_ARCHIVE" value="${BUNDLED_TOOL1}-${BUNDLED_TOOL1_VERSION}-i686-pc-linux-gnu.tar.bz2"/>
+  <property name="LINUX64_BUNDLED_TOOL1_ARCHIVE" value="${BUNDLED_TOOL1}-${BUNDLED_TOOL1_VERSION}-x86_64-pc-linux-gnu.tar.bz2"/>
+  <property name="LINUXARM_BUNDLED_TOOL1_ARCHIVE" value="${BUNDLED_TOOL1}-${BUNDLED_TOOL1_VERSION}-armhf-pc-linux-gnu.tar.bz2"/>
+
+  <property name="MACOSX_BUNDLED_TOOL1_SHA256" value="41af8d3b0a586853c8317b4fb5163ca0db594a1870ddf680fd988c42166fc3e5"/>
+  <property name="WINDOWS_BUNDLED_TOOL1_SHA256" value="41f667f1f6a0ab8df46b4ffacd023176dcdef331d6db3b74bddd37d18cca0a44"/>
+  <property name="LINUX32_BUNDLED_TOOL1_SHA256" value="5933d66927bce46ababa9b68a8b7f1d53f68c4f3ff7a5ce4b85d7cf4e6c6bfee"/>
+  <property name="LINUX64_BUNDLED_TOOL1_SHA256" value="d826cca7383461f7e8adde686372cf900e9cb3afd639555cf2d6c645b283a476"/>
+  <property name="LINUXARM_BUNDLED_TOOL1_SHA256" value="23ea1341dbc117ec067f2eb1a498ad2bdd7d11fff0143c00b2e018c39804f6b4"/>
+
   <!-- Libraries required for running arduino -->
   <fileset dir=".." id="runtime.jars">
     <include name="arduino-core/arduino-core.jar" />
@@ -261,8 +306,28 @@
     </sequential>
   </macrodef>
 
+
   <!-- copy hardware folder -->
   <target name="assemble-hardware" unless="light_bundle">
+    <condition property="avr.git.bundled">
+      <or>
+        <!-- copy files from avr dir only if default build -->
+        <equals arg1="${BUNDLED_CORE}.${BUNDLED_CORE_VERSION}" arg2="avr.git"/>
+      </or>
+    </condition>
+    <antcall target="copy-hardware-folder">
+    </antcall>
+    <antcall target="core-bundle">
+      <param name="unpack_target" value="untar-unzip-sha256"/>
+      <param name="archive_file" value="${BUNDLED_CORE_ARCHIVE}"/>
+      <param name="archive_url" value="${BUNDLED_CORE_URL}"/>
+      <param name="arch_name" value="${BUNDLED_CORE}"/>
+      <param name="arch_maintainer" value="${BUNDLED_CORE_MAINTAINER}"/>
+      <param name="sha256" value="${BUNDLED_CORE_SHA256}"/>
+    </antcall>
+  </target>
+
+  <target name="copy-hardware-folder" if="avr.git.bundled">
     <copy todir="${target.path}/hardware">
       <fileset dir="../hardware">
         <exclude name="arduino/sam/**"/>
@@ -273,7 +338,7 @@
   <!-- - - - - - - - - -->
   <!-- Revision check  -->
   <!-- - - - - - - - - -->
-  <target name="revision-check">
+  <target name="revision-core-check" if="avr.git.bundled">
 
     <!-- figure out the AVR core version number in platform.txt -->
     <loadfile srcfile="../hardware/arduino/avr/platform.txt" property="revision.avr.platform">
@@ -311,6 +376,9 @@
       Mismatching versions for bundled AVR core and package_index_bundled.json.
       Please check your platform.txt and package_index_bundled.json.
     </fail>
+  </target>
+
+  <target name="revision-check">
 
     <!-- figure out the IDE version number -->
     <loadfile srcfile="shared/revisions.txt" property="revision">
@@ -331,7 +399,7 @@
 
     <!-- figure out the IDE version number in base.java -->
     <loadfile srcfile="../arduino-core/src/processing/app/BaseNoGui.java"
-	      property="revision.base">
+        property="revision.base">
       <filterchain>
         <tokenfilter>
           <linetokenizer />
@@ -342,6 +410,8 @@
     </loadfile>
     <echo message="Latest revision detected in shared/revision.txt is: ${revision}" />
     <echo message="                     Revision in BaseNoGui.java is: ${revision.base}" />
+
+    <antcall target="revision-core-check"/>
   </target>
 
   <!-- - - - - - - - -->
@@ -484,15 +554,24 @@
 
   <!-- Unzip AVR tools -->
   <target name="macosx-build-avr-toolchain" unless="light_bundle">
-    <antcall target="avr-toolchain-bundle">
-      <param name="unpack_target" value="untar"/>
-      <param name="gcc_archive_file" value="avr-gcc-${AVRGCC-VERSION}-i386-apple-darwin11.tar.bz2"/>
-      <param name="gcc_version" value="${AVRGCC-VERSION}"/>
-      <param name="avrdude_archive_file" value="avrdude-${AVRDUDE-VERSION}-i386-apple-darwin11.tar.bz2"/>
-      <param name="avrdude_version" value="${AVRDUDE-VERSION}"/>
-      <param name="arduinoOTA_archive_file" value="arduinoOTA-${arduinoOTA-VERSION}-darwin_amd64.tar.bz2"/>
-      <param name="arduinoOTA_version" value="${arduinoOTA-VERSION}"/>
+    <antcall target="toolchain-bundle">
+      <param name="unpack_target" value="untar-sha256"/>
+      <param name="arch_name" value="${BUNDLED_CORE}"/>
+      <param name="core_maintainer" value="${BUNDLED_CORE_MAINTAINER}"/>
+      <param name="gcc_name" value="${BUNDLED_COMPILER}"/>
+      <param name="gcc_archive_file" value="${MACOSX_BUNDLED_COMPILER_ARCHIVE}"/>
+      <param name="gcc_archive_url" value="${BUNDLED_COMPILER_BASEURL}/${MACOSX_BUNDLED_COMPILER_ARCHIVE}"/>
+      <param name="gcc_version" value="${BUNDLED_COMPILER_VERSION}"/>
+      <param name="gcc_sha256" value="${MACOSX_BUNDLED_COMPILER_SHA256}"/>
+      <param name="gcc_baseurl" value="${BUNDLED_COMPILER_BASEURL}"/>
+      <param name="tool_name" value="${BUNDLED_TOOL1}"/>
+      <param name="tool_archive_file" value="${MACOSX_BUNDLED_TOOL1_ARCHIVE}"/>
+      <param name="tool_archive_url" value="${BUNDLED_TOOL1_BASEURL}/${MACOSX_BUNDLED_TOOL1_ARCHIVE}"/>
+      <param name="tool_version" value="${BUNDLED_TOOL1_VERSION}"/>
+      <param name="tool_sha256" value="${MACOSX_BUNDLED_TOOL1_SHA256}"/>
+      <param name="tool_baseurl" value="${BUNDLED_TOOL1_BASEURL}"/>
     </antcall>
+
 
     <chmod perm="+x">
       <fileset dir="${staging_folder}/work/${staging_hardware_folder}/tools" includes="**/bin/*"/>
@@ -698,14 +777,22 @@
 
     <antcall target="build-arduino-builder" />
 
-    <antcall target="avr-toolchain-bundle">
-      <param name="unpack_target" value="untar"/>
-      <param name="gcc_archive_file" value="avr-gcc-${AVRGCC-VERSION}-armhf-pc-linux-gnu.tar.bz2"/>
-      <param name="gcc_version" value="${AVRGCC-VERSION}"/>
-      <param name="avrdude_archive_file" value="avrdude-${AVRDUDE-VERSION}-armhf-pc-linux-gnu.tar.bz2"/>
-      <param name="avrdude_version" value="${AVRDUDE-VERSION}"/>
-      <param name="arduinoOTA_archive_file" value="arduinoOTA-${arduinoOTA-VERSION}-linux_arm.tar.bz2"/>
-      <param name="arduinoOTA_version" value="${arduinoOTA-VERSION}"/>
+    <antcall target="toolchain-bundle">
+      <param name="unpack_target" value="untar-sha256"/>
+      <param name="arch_name" value="${BUNDLED_CORE}"/>
+      <param name="core_maintainer" value="${BUNDLED_CORE_MAINTAINER}"/>
+      <param name="gcc_name" value="${BUNDLED_COMPILER}"/>
+      <param name="gcc_archive_file" value="${LINUXARM_BUNDLED_COMPILER_ARCHIVE}"/>
+      <param name="gcc_archive_url" value="${BUNDLED_COMPILER_BASEURL}/${LINUXARM_BUNDLED_COMPILER_ARCHIVE}"/>
+      <param name="gcc_version" value="${BUNDLED_COMPILER_VERSION}"/>
+      <param name="gcc_sha256" value="${LINUXARM_BUNDLED_COMPILER_SHA256}"/>
+      <param name="gcc_baseurl" value="${BUNDLED_COMPILER_BASEURL}"/>
+      <param name="tool_name" value="${BUNDLED_TOOL1}"/>
+      <param name="tool_archive_file" value="${LINUXARM_BUNDLED_TOOL1_ARCHIVE}"/>
+      <param name="tool_archive_url" value="${BUNDLED_TOOL1_BASEURL}/${LINUXARM_BUNDLED_TOOL1_ARCHIVE}"/>
+      <param name="tool_version" value="${BUNDLED_TOOL1_VERSION}"/>
+      <param name="tool_sha256" value="${LINUXARM_BUNDLED_TOOL1_SHA256}"/>
+      <param name="tool_baseurl" value="${BUNDLED_TOOL1_BASEURL}"/>
     </antcall>
   </target>
 
@@ -716,14 +803,22 @@
 
     <antcall target="build-arduino-builder" />
 
-    <antcall target="avr-toolchain-bundle">
-      <param name="unpack_target" value="untar"/>
-      <param name="gcc_archive_file" value="avr-gcc-${AVRGCC-VERSION}-i686-pc-linux-gnu.tar.bz2"/>
-      <param name="gcc_version" value="${AVRGCC-VERSION}"/>
-      <param name="avrdude_archive_file" value="avrdude-${AVRDUDE-VERSION}-i686-pc-linux-gnu.tar.bz2"/>
-      <param name="avrdude_version" value="${AVRDUDE-VERSION}"/>
-      <param name="arduinoOTA_archive_file" value="arduinoOTA-${arduinoOTA-VERSION}-linux_386.tar.bz2"/>
-      <param name="arduinoOTA_version" value="${arduinoOTA-VERSION}"/>
+    <antcall target="toolchain-bundle">
+      <param name="unpack_target" value="untar-sha256"/>
+      <param name="arch_name" value="${BUNDLED_CORE}"/>
+      <param name="core_maintainer" value="${BUNDLED_CORE_MAINTAINER}"/>
+      <param name="gcc_name" value="${BUNDLED_COMPILER}"/>
+      <param name="gcc_archive_file" value="${LINUX32_BUNDLED_COMPILER_ARCHIVE}"/>
+      <param name="gcc_archive_url" value="${BUNDLED_COMPILER_BASEURL}/${LINUX32_BUNDLED_COMPILER_ARCHIVE}"/>
+      <param name="gcc_version" value="${BUNDLED_COMPILER_VERSION}"/>
+      <param name="gcc_sha256" value="${LINUX32_BUNDLED_COMPILER_SHA256}"/>
+      <param name="gcc_baseurl" value="${BUNDLED_COMPILER_BASEURL}"/>
+      <param name="tool_name" value="${BUNDLED_TOOL1}"/>
+      <param name="tool_archive_file" value="${LINUX32_BUNDLED_TOOL1_ARCHIVE}"/>
+      <param name="tool_archive_url" value="${BUNDLED_TOOL1_BASEURL}/${LINUX32_BUNDLED_TOOL1_ARCHIVE}"/>
+      <param name="tool_version" value="${BUNDLED_TOOL1_VERSION}"/>
+      <param name="tool_sha256" value="${LINUX32_BUNDLED_TOOL1_SHA256}"/>
+      <param name="tool_baseurl" value="${BUNDLED_TOOL1_BASEURL}"/>
     </antcall>
   </target>
 
@@ -734,14 +829,22 @@
 
     <antcall target="build-arduino-builder" />
 
-    <antcall target="avr-toolchain-bundle">
-      <param name="unpack_target" value="untar"/>
-      <param name="gcc_archive_file" value="avr-gcc-${AVRGCC-VERSION}-x86_64-pc-linux-gnu.tar.bz2"/>
-      <param name="gcc_version" value="${AVRGCC-VERSION}"/>
-      <param name="avrdude_archive_file" value="avrdude-${AVRDUDE-VERSION}-x86_64-pc-linux-gnu.tar.bz2"/>
-      <param name="avrdude_version" value="${AVRDUDE-VERSION}"/>
-      <param name="arduinoOTA_archive_file" value="arduinoOTA-${arduinoOTA-VERSION}-linux_amd64.tar.bz2"/>
-      <param name="arduinoOTA_version" value="${arduinoOTA-VERSION}"/>
+    <antcall target="toolchain-bundle">
+      <param name="unpack_target" value="untar-sha256"/>
+      <param name="arch_name" value="${BUNDLED_CORE}"/>
+      <param name="core_maintainer" value="${BUNDLED_CORE_MAINTAINER}"/>
+      <param name="gcc_name" value="${BUNDLED_COMPILER}"/>
+      <param name="gcc_archive_file" value="${LINUX64_BUNDLED_COMPILER_ARCHIVE}"/>
+      <param name="gcc_archive_url" value="${BUNDLED_COMPILER_BASEURL}/${LINUX64_BUNDLED_COMPILER_ARCHIVE}"/>
+      <param name="gcc_version" value="${BUNDLED_COMPILER_VERSION}"/>
+      <param name="gcc_sha256" value="${LINUX64_BUNDLED_COMPILER_SHA256}"/>
+      <param name="gcc_baseurl" value="${BUNDLED_COMPILER_BASEURL}"/>
+      <param name="tool_name" value="${BUNDLED_TOOL1}"/>
+      <param name="tool_archive_file" value="${LINUX64_BUNDLED_TOOL1_ARCHIVE}"/>
+      <param name="tool_archive_url" value="${BUNDLED_TOOL1_BASEURL}/${LINUX64_BUNDLED_TOOL1_ARCHIVE}"/>
+      <param name="tool_version" value="${BUNDLED_TOOL1_VERSION}"/>
+      <param name="tool_sha256" value="${LINUX64_BUNDLED_TOOL1_SHA256}"/>
+      <param name="tool_baseurl" value="${BUNDLED_TOOL1_BASEURL}"/>
     </antcall>
   </target>
 
@@ -832,6 +935,20 @@
     </fail>
   </target>
 
+  <target name="untar-unzip-checksum-sha256" depends="untar-unzip-download">
+    <echo>Testing checksum of "${archive_file}"</echo>
+    <echo append="false" file="${archive_file}.sha256" message="${sha256}"/>
+    <checksum file="${archive_file}" algorithm="sha-256" fileext=".sha256" verifyproperty="checksum.matches"/>
+    <condition property="checksum.matches.fail">
+      <equals arg1="${checksum.matches}" arg2="false"/>
+    </condition>
+    <fail if="checksum.matches.fail">Checksum failed.
+
+      File ${archive_file} failed checksum.
+      Please remove "${archive_file}" to download it again.
+    </fail>
+  </target>
+
   <!-- Ensure that the tool is downloaded and test checksums, if everything's ok unzip it on the tools folder  -->
   <target name="untar" depends="untar-unzip-checksum" unless="${archive_file}_installed">
     <echo>Untarring ${archive_file} into folder ${dest_folder}</echo>
@@ -854,6 +971,46 @@
     </exec>
   </target>
 
+  <target name="untar-sha256" depends="untar-unzip-checksum-sha256" unless="${archive_file}_installed">
+    <echo>Untarring ${archive_file} into folder ${dest_folder}</echo>
+    <exec executable="tar" failonerror="true">
+      <arg value="xf"/>
+      <arg value="${archive_file}"/>
+      <arg value="--directory=${dest_folder}"/>
+    </exec>
+  </target>
+
+  <target name="unzip-sha256" depends="untar-unzip-checksum-sha256" unless="${archive_file}_installed">
+    <echo>Unzipping ${archive_file} into folder ${dest_folder}</echo>
+    <mkdir dir="${dest_folder}" />
+    <exec executable="unzip" failonerror="true">
+      <arg value="-q" />
+      <arg value="-n" />
+      <arg value="-d" />
+      <arg value="${dest_folder}" />
+      <arg value="${archive_file}" />
+    </exec>
+  </target>
+
+  <target name="untar-sha256-enable" if="${isNotZip}">
+    <antcall target="untar-sha256"/>
+  </target>
+
+  <target name="unzip-sha256-enable" unless="${isNotZip}">
+    <antcall target="unzip-sha256"/>
+  </target>
+
+  <target name="untar-unzip-sha256">
+    <!-- get file extension -->
+    <basename property="filename" file="${archive_file}"/>
+    <basename property="filename_without_zip" file="${archive_file}" suffix=".zip"/>
+    <condition property="isNotZip">
+      <equals arg1="${filename}" arg2="${filename_without_zip}"/>
+    </condition>
+    <antcall target="untar-sha256-enable"/>
+    <antcall target="unzip-sha256-enable"/>
+  </target>
+
   <target name="unzip-with-ant-task" depends="untar-unzip-checksum" unless="${archive_file}_installed">
     <echo>Unzipping ${archive_file} into folder ${dest_folder}</echo>
     <mkdir dir="${dest_folder}" />
@@ -874,7 +1031,7 @@
   </target>
 
   <target name="linux-dist" depends="build"
-	  description="Build .tar.xz of linux version">
+    description="Build .tar.xz of linux version">
 
     <move file="linux/work" tofile="linux/arduino-${version}" />
 
@@ -898,20 +1055,20 @@
   </target>
 
   <target name="linux32-dist" depends="linux-dist"
-	  description="Build .tar.xz of linux x86_32 version" />
+    description="Build .tar.xz of linux x86_32 version" />
 
   <target name="linux64-dist" depends="linux-dist"
-	  description="Build .tar.xz of linux x86_64 version" />
+    description="Build .tar.xz of linux x86_64 version" />
 
   <target name="linuxarm-dist" depends="linux-dist"
-	  description="Build .tar.xz of linux armhf version" />
+    description="Build .tar.xz of linux armhf version" />
 
   <!-- - - - - - - - -->
   <!-- Windows       -->
   <!-- - - - - - - - -->
 
   <target name="windows-clean" depends="subprojects-clean"
-	  description="Clean windows version">
+    description="Clean windows version">
     <delete dir="windows/work" />
     <delete>
       <fileset dir="windows" includes="arduino-*windows*.zip"/>
@@ -949,8 +1106,8 @@
   </target>
 
   <target name="windows-build"
-	  depends="revision-check, windows-checkos, subprojects-build"
-	  description="Build windows version">
+    depends="revision-check, windows-checkos, subprojects-build"
+    description="Build windows version">
     <mkdir dir="windows/work" />
     <mkdir dir="windows/work/${staging_hardware_folder}" />
 
@@ -1074,8 +1231,8 @@
 
     <property name="launch4j.dir" value="windows/launcher/launch4j/" />
     <taskdef name="launch4j"
-	     classname="net.sf.launch4j.ant.Launch4jTask"
-	     classpath="${launch4j.dir}/launch4j.jar; ${launch4j.dir}/lib/xstream.jar" />
+       classname="net.sf.launch4j.ant.Launch4jTask"
+       classpath="${launch4j.dir}/launch4j.jar; ${launch4j.dir}/lib/xstream.jar" />
 
     <copy todir="windows/work">
       <fileset dir="windows/launcher"
@@ -1113,14 +1270,22 @@
   </target>
 
   <target name="windows-build-avr-toolchain">
-    <antcall target="avr-toolchain-bundle">
-      <param name="unpack_target" value="unzip"/>
-      <param name="gcc_archive_file" value="avr-gcc-${AVRGCC-VERSION}-i686-mingw32.zip"/>
-      <param name="gcc_version" value="${AVRGCC-VERSION}"/>
-      <param name="avrdude_archive_file" value="avrdude-${AVRDUDE-VERSION}-i686-w64-mingw32.zip"/>
-      <param name="avrdude_version" value="${AVRDUDE-VERSION}"/>
-      <param name="arduinoOTA_archive_file" value="arduinoOTA-${arduinoOTA-VERSION}-windows_386.zip"/>
-      <param name="arduinoOTA_version" value="${arduinoOTA-VERSION}"/>
+    <antcall target="toolchain-bundle">
+      <param name="unpack_target" value="untar-unzip-sha256"/>
+      <param name="arch_name" value="${BUNDLED_CORE}"/>
+      <param name="core_maintainer" value="${BUNDLED_CORE_MAINTAINER}"/>
+      <param name="gcc_name" value="${BUNDLED_COMPILER}"/>
+      <param name="gcc_archive_file" value="${WINDOWS_BUNDLED_COMPILER_ARCHIVE}"/>
+      <param name="gcc_archive_url" value="${BUNDLED_COMPILER_BASEURL}/${WINDOWS_BUNDLED_COMPILER_ARCHIVE}"/>
+      <param name="gcc_version" value="${BUNDLED_COMPILER_VERSION}"/>
+      <param name="gcc_sha256" value="${WINDOWS_BUNDLED_COMPILER_SHA256}"/>
+      <param name="gcc_baseurl" value="${BUNDLED_COMPILER_BASEURL}"/>
+      <param name="tool_name" value="${BUNDLED_TOOL1}"/>
+      <param name="tool_archive_file" value="${WINDOWS_BUNDLED_TOOL1_ARCHIVE}"/>
+      <param name="tool_archive_url" value="${BUNDLED_TOOL1_BASEURL}/${WINDOWS_BUNDLED_TOOL1_ARCHIVE}"/>
+      <param name="tool_version" value="${BUNDLED_TOOL1_VERSION}"/>
+      <param name="tool_sha256" value="${WINDOWS_BUNDLED_TOOL1_SHA256}"/>
+      <param name="tool_baseurl" value="${BUNDLED_TOOL1_BASEURL}"/>
     </antcall>
   </target>
 
@@ -1150,22 +1315,22 @@
   <!-- - - - - - - - -->
 
    <target name="source-dist" depends="revision-check"
-	  description="Build .tar.gz of source code">
+    description="Build .tar.gz of source code">
     <input message="Enter version number:"
-	   addproperty="version"
-	   defaultvalue="${revision}" />
+     addproperty="version"
+     defaultvalue="${revision}" />
 
     <tar compression="gzip" destfile="arduino-${version}-src.tar.gz">
       <tarfileset dir="../"
-		  prefix="arduino-${version}"
-		  excludes="**/*.tgz,
-			     **/*.bz2,
-			     **/build/macosx/,
-			     **/build/windows/,
-			     **/work/,
-			     **/.git/,
-			     **/*.class"
-		  />
+      prefix="arduino-${version}"
+      excludes="**/*.tgz,
+           **/*.bz2,
+           **/build/macosx/,
+           **/build/windows/,
+           **/work/,
+           **/.git/,
+           **/*.class"
+      />
     </tar>
 
     <echo>
@@ -1183,7 +1348,89 @@
   <!-- - - - - - - - -->
 
   <target name="clean" description="Perform a spring cleaning"
-	  depends="linux-clean, windows-clean, macosx-clean, subprojects-clean">
+    depends="linux-clean, windows-clean, macosx-clean, subprojects-clean">
+  </target>
+
+  <target name="core-bundle" unless="avr.git.bundled">
+    <!-- Unzip Core tools -->
+    <!--<mkdir dir="${staging_folder}/work/${staging_hardware_folder}/tmp/${arch_maintainer}/${arch_name}"/> -->
+
+    <antcall target="${unpack_target}">
+      <param name="archive_file" value="${staging_folder}/${archive_file}"/>
+      <param name="archive_url" value="${archive_url}"/>
+      <param name="final_folder" value="${staging_folder}/work/${staging_hardware_folder}/tmp/core/${BUNDLED_CORE_VERSION}"/>
+      <param name="dest_folder" value="${staging_folder}/work/${staging_hardware_folder}/tmp/core/"/>
+      <param name="sha256" value="${sha256}"/>
+    </antcall>
+
+    <!-- discard one folder level while copying -->
+    <dirset id="dir_list" dir="${staging_folder}/work/${staging_hardware_folder}/tmp/core/">
+      <depth min="0" max="0"/>
+    </dirset>
+    <pathconvert property="dir_names_list" refid="dir_list" pathsep=","/>
+    <echo message="${dir_names_list}" />
+    <move file="${dir_names_list}" tofile="${staging_folder}/work/${staging_hardware_folder}/${arch_maintainer}/${arch_name}/"/>
+
+    <delete dir="${staging_folder}/work/${staging_hardware_folder}/tmp/core/${BUNDLED_CORE_VERSION}/"/>
+
+    <!-- get core version from platform.txt -->
+    <loadfile srcfile="${staging_folder}/work/${staging_hardware_folder}/${arch_maintainer}/${arch_name}/platform.txt" property="revision.core.platform">
+      <filterchain>
+        <tokenfilter>
+          <linetokenizer />
+          <containsregex pattern="version="/>
+          <replaceregex pattern="version=(.*)" flags="g" replace="\1"/>
+        </tokenfilter>
+      </filterchain>
+    </loadfile>
+
+    <echo message="Core version in platform.txt is ${revision.core.platform}"/>
+
+    <condition property="revision.core.ok">
+        <equals arg1="${BUNDLED_CORE_VERSION}" arg2="${revision.core.platform}"/>
+    </condition>
+
+    <antcall target="replace-bundled-core-version"/>
+  </target>
+
+  <target name="replace-bundled-core-version" unless="revision.core.ok">
+    <echo message="replacing core version ${revision.core.platform} with ${BUNDLED_CORE_VERSION}" />
+    <replace file="${staging_folder}/work/${staging_hardware_folder}/${arch_maintainer}/${arch_name}/platform.txt" token="version=${revision.core.platform}" value="version=${BUNDLED_CORE_VERSION}"/>
+  </target>
+
+  <target name="toolchain-bundle" unless="light_bundle">
+    <!-- Unzip tools -->
+    <mkdir dir="${staging_folder}/work/${staging_hardware_folder}/tmp/gcc"/>
+
+    <antcall target="${unpack_target}">
+      <param name="archive_file" value="${staging_folder}/${gcc_archive_file}"/>
+      <param name="archive_url" value="${gcc_archive_url}"/>
+      <param name="final_folder" value="${staging_folder}/work/${staging_hardware_folder}/tmp/gcc/${gcc_version}/"/>
+      <param name="dest_folder" value="${staging_folder}/work/${staging_hardware_folder}/tmp/gcc/"/>
+      <param name="sha256" value="${gcc_sha256}"/>
+    </antcall>
+
+    <mkdir dir="${staging_folder}/work/${staging_hardware_folder}/tmp/${tool_name}"/>
+
+    <antcall target="${unpack_target}">
+      <param name="archive_file" value="${staging_folder}/${tool_archive_file}"/>
+      <param name="archive_url" value="${tool_archive_url}"/>
+      <param name="final_folder" value="${staging_folder}/work/${staging_hardware_folder}/tmp/${tool_name}/${tool_version}"/>
+      <param name="dest_folder" value="${staging_folder}/work/${staging_hardware_folder}/tmp/${tool_name}/"/>
+      <param name="sha256" value="${tool_sha256}"/>
+    </antcall>
+
+    <move file="${staging_folder}/work/${staging_hardware_folder}/tmp/gcc/${arch_name}" tofile="${staging_folder}/work/${staging_hardware_folder}/tools/${arch_name}"/>
+    <!-- discard one folder level while copying -->
+    <dirset id="dir_list" dir="${staging_folder}/work/${staging_hardware_folder}/tmp/${tool_name}/">
+      <depth min="0" max="0"/>
+    </dirset>
+    <pathconvert property="dir_names_list" refid="dir_list" pathsep=","/>
+    <echo message="${dir_names_list}" />
+    <move file="${dir_names_list}" tofile="${staging_folder}/work/${staging_hardware_folder}/tools/${arch_name}"/>
+
+    <echo append="false" file="${staging_folder}/work/${staging_hardware_folder}/tools/${arch_name}/builtin_tools_versions.txt" message="${core_maintainer}.${tool_name}=${tool_version}${line.separator}"/>
+    <echo append="true" file="${staging_folder}/work/${staging_hardware_folder}/tools/${arch_name}/builtin_tools_versions.txt" message="${core_maintainer}.${gcc_name}=${gcc_version}${line.separator}"/>
   </target>
 
   <target name="avr-toolchain-bundle" unless="light_bundle">

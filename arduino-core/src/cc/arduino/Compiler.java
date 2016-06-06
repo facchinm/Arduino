@@ -243,7 +243,7 @@ public class Compiler implements MessageConsumer {
     addPathFlagIfPathExists(cmd, "-hardware", BaseNoGui.getSketchbookHardwareFolder());
 
     addPathFlagIfPathExists(cmd, "-tools", BaseNoGui.getContentFile("tools-builder"));
-    addPathFlagIfPathExists(cmd, "-tools", Paths.get(BaseNoGui.getHardwarePath(), "tools", "avr").toFile());
+    addPathFlagIfPathExists(cmd, "-tools", Paths.get(BaseNoGui.getHardwarePath(), "tools").toFile());
     addPathFlagIfPathExists(cmd, "-tools", installedPackagesFolder);
 
     addPathFlagIfPathExists(cmd, "-built-in-libraries", BaseNoGui.getContentFile("libraries"));
