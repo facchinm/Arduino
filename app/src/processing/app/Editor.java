@@ -245,6 +245,21 @@ public class Editor extends JFrame implements RunnerListener {
             watcher = null;
           }
           base.handleActivated(Editor.this);
+          if (PreferencesData.getBoolean("editor.board_sketch_association")) {
+            if (sketchController.getSketch().isAssociatedWithBoard()) {
+              String fqbn = sketchController.getSketch().getAssociatedFQBN();
+              String parts[] = fqbn.split(":");
+              PreferencesData.set("target_package", parts[0]);
+              PreferencesData.set("target_platform", parts[1]);
+              PreferencesData.set("board", parts[2]);
+              PreferencesData.set("serial.port", sketchController.getSketch().getAssociatedSerial());   
+            }
+            try {
+              base.rebuildBoardsMenu();
+              //populatePortMenu();
+              onBoardOrPortChange();
+            } catch (Exception e1) {}
+          }
         }
 
         // added for 1.0.5
@@ -1596,7 +1611,14 @@ public class Editor extends JFrame implements RunnerListener {
    * Gets the current sketch.
    */
   public Sketch getSketch() {
+    if (getSketchAssociatedFQBN() != null) {
+      System.out.println(getSketchAssociatedFQBN());
+    }
     return sketch;
+  }
+
+  public String getSketchAssociatedFQBN() {
+    return sketch.getAssociatedFQBN();
   }
 
   /**
@@ -2679,7 +2701,29 @@ public class Editor extends JFrame implements RunnerListener {
     String infos = I18n.format("BN: {0}\nVID: {1}\nPID: {2}\nSN: {3}", label, vid, pid, iserial);
     JTextArea textArea = new JTextArea(infos);
 
-    JOptionPane.showMessageDialog(this, textArea, tr("Board Info"), JOptionPane.PLAIN_MESSAGE);
+    String association = "";
+    if (!this.getSketch().isAssociatedWithBoard()) {
+      association = tr("Associate currently selected board to current sketch");
+    } else {
+      association = tr("Deassociate board from current sketch");
+    }
+
+    if (PreferencesData.getBoolean("editor.board_sketch_association") == true) {
+        String[] buttons = { tr("Exit") , association};
+        int choice = JOptionPane.showOptionDialog(this, textArea, tr("Board Info"), JOptionPane.DEFAULT_OPTION, JOptionPane.PLAIN_MESSAGE,  null, buttons, buttons[0]);
+        if (choice == 1) {
+          if (this.getSketch().isAssociatedWithBoard()) {
+            this.getSketch().deassociateFromBoard();
+          } else {
+            try {
+            this.getSketch().associateToCurrentBoard();
+            } catch (Exception e) {}
+          }
+        }
+      } else {
+        String[] exit_button = { tr("Exit")};
+        JOptionPane.showOptionDialog(this, textArea, tr("Board Info"), JOptionPane.DEFAULT_OPTION, JOptionPane.PLAIN_MESSAGE, null, exit_button, exit_button[0]);
+      }
   }
 
   /**

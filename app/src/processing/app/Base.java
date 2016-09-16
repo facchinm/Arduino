@@ -1354,9 +1354,11 @@ public class Base {
       }
     }
 
-    // Update editors status bar
-    for (Editor editor : editors) {
-      editor.onBoardOrPortChange();
+    if (PreferencesData.getBoolean("editor.board_sketch_association") == false) {
+      // Update editors status bar
+      for (Editor editor : editors) {
+        editor.onBoardOrPortChange();
+      }
     }
   }
 

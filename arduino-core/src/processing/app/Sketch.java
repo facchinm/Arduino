@@ -6,6 +6,14 @@ import java.nio.file.Files;
 import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.core.JsonGenerationException;
+import com.fasterxml.jackson.databind.DeserializationFeature;
+import com.fasterxml.jackson.databind.JsonMappingException;
+
+import java.io.InputStream;
+import java.io.FileInputStream;
+import processing.app.debug.*;
 
 import cc.arduino.files.DeleteFilesOnShutdown;
 import processing.app.helpers.FileUtils;
@@ -20,14 +28,18 @@ public class Sketch {
   public static final List<String> OLD_SKETCH_EXTENSIONS = Arrays.asList("pde");
   public static final List<String> SKETCH_EXTENSIONS = Stream.concat(Stream.of(DEFAULT_SKETCH_EXTENSION), OLD_SKETCH_EXTENSIONS.stream()).collect(Collectors.toList());
   public static final List<String> OTHER_ALLOWED_EXTENSIONS = Arrays.asList("c", "cpp", "h", "hh", "hpp", "s");
+  public static final List<String> METADATA_ALLOWED_EXTENSIONS = Arrays.asList("json");
   public static final List<String> EXTENSIONS = Stream.concat(SKETCH_EXTENSIONS.stream(), OTHER_ALLOWED_EXTENSIONS.stream()).collect(Collectors.toList());
+  public static final List<String> METADATA_EXTENSIONS = METADATA_ALLOWED_EXTENSIONS.stream().collect(Collectors.toList());
 
   /**
    * folder that contains this sketch
    */
   private File folder;
 
-  private List<SketchFile> files = new ArrayList<>();
+
+  private List<SketchFile> files = new ArrayList<SketchFile>();
+  private List<SketchFile> metadata_files = new ArrayList<SketchFile>();
 
   private File buildPath;
 
@@ -52,6 +64,7 @@ public class Sketch {
   Sketch(File file) throws IOException {
     folder = file.getParentFile();
     files = listSketchFiles(true);
+    metadata_files = listMetadataFiles(false);
   }
 
   static public File checkSketchFile(File file) {
@@ -87,8 +100,10 @@ public class Sketch {
    */
   public boolean reload() throws IOException {
     List<SketchFile> reloaded = listSketchFiles(false);
-    if (!reloaded.equals(files)) {
+    List<SketchFile> reloaded_meta = listMetadataFiles(false);
+    if (!reloaded.equals(files) || !reloaded_meta.equals(metadata_files)) {
       files = reloaded;
+      metadata_files = reloaded_meta;
       return true;
     }
     return false;
@@ -115,6 +130,19 @@ public class Sketch {
 
     if (result.size() == 0)
       throw new IOException(tr("No valid code files found"));
+
+    return new ArrayList<>(result);
+  }
+
+  private List<SketchFile> listMetadataFiles(boolean showWarnings) throws IOException {
+    Set<SketchFile> result = new TreeSet<>(CODE_DOCS_COMPARATOR);
+    for (File file : FileUtils.listFiles(folder, false, METADATA_EXTENSIONS)) {
+      if (BaseNoGui.isSanitaryName(file.getName())) {
+        result.add(new SketchFile(this, file));
+      } else if (showWarnings) {
+        System.err.println(I18n.format(tr("File name {0} is invalid: ignored"), file.getName()));
+      }
+    }
 
     return new ArrayList<>(result);
   }
@@ -216,6 +244,105 @@ public class Sketch {
         return true;
     }
     return false;
+  }
+
+  /**
+   * Is the sketch attached to a particular board?
+   */
+  public boolean isAssociatedWithBoard() {
+	try {
+		reload();
+	} catch (Exception e) {}
+    for (SketchFile file : metadata_files) {
+      if (file.getFile().getName().equals("sketch.json"))
+        return true;
+    }
+    return false;
+  }
+
+  public File getMetaDataFile() {
+	try {
+		reload();
+	} catch (Exception e) {}
+    for (SketchFile file : metadata_files) {
+      if (file.getFile().getName().equals("sketch.json"))
+        return file.getFile();
+    }
+    return null;
+  }
+
+  public static class SketchMetadata {
+    public SketchMetadata() {   }
+    private BoardAssociationData cpu;
+    public BoardAssociationData getCpu() { return cpu; }
+    public void setCpu(BoardAssociationData tmp) { cpu = tmp; }
+  }
+
+  public static class BoardAssociationData {
+    public BoardAssociationData() {   }
+    private String fqbn;
+    private String name;
+    private String com_name;
+    public String getFqbn() { return fqbn; }
+    public String getName() { return name; }
+    public String getComName() { return com_name; }
+    public void setFqbn(String tmp) { fqbn = tmp; }
+    public void setName(String tmp) { name = tmp; }
+    public void setComName(String tmp) { com_name = tmp; }
+  }
+
+  public BoardAssociationData getMetadataForCurrentSketch() {
+    ObjectMapper mapper = new ObjectMapper();
+    //mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
+    try {
+      InputStream is = new FileInputStream(getMetaDataFile());
+      SketchMetadata metadata = mapper.readValue(is, SketchMetadata.class);
+      System.out.println(metadata.getCpu().getFqbn());
+      return metadata.getCpu();
+    } catch (IOException e) {
+
+    }
+    return null;
+
+  }
+
+  public String getAssociatedFQBN() {
+    if (isAssociatedWithBoard()) {
+      return getMetadataForCurrentSketch().getFqbn();
+    }
+    return null;
+  }
+
+  public String getAssociatedName() {
+    if (isAssociatedWithBoard()) {
+      return getMetadataForCurrentSketch().getFqbn();
+    }
+    return null;
+  }
+
+  public String getAssociatedSerial() {
+	 if (isAssociatedWithBoard()) {
+	   return getMetadataForCurrentSketch().getComName();
+	 }
+	 return null;
+   }
+  
+  public void deassociateFromBoard() {
+    FileUtils.deleteIfExists(getMetaDataFile());
+  }
+
+  public void associateToCurrentBoard() throws JsonGenerationException, JsonMappingException, IOException {
+    ObjectMapper mapper = new ObjectMapper();
+    SketchMetadata metadata = new SketchMetadata();
+    BoardAssociationData boardInfo = new BoardAssociationData();
+    TargetBoard board = BaseNoGui.getTargetBoard();
+    TargetPlatform platform = board.getContainerPlatform();
+    TargetPackage aPackage = platform.getContainerPackage();
+    String fqbn = Stream.of(aPackage.getId(), platform.getId(), board.getId()).collect(Collectors.joining(":"));
+    boardInfo.setFqbn(fqbn);
+    boardInfo.setComName(PreferencesData.get("serial.port"));
+    metadata.setCpu(boardInfo);
+    mapper.writeValue(new File(folder, "sketch.json"), metadata);
   }
 
   /**
