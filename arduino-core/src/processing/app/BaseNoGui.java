@@ -131,7 +131,7 @@ public class BaseNoGui {
     if (board == null)
       return null;
     String boardId = board.getId();
-    
+
     PreferencesMap prefs = new PreferencesMap(board.getPreferences());
 
     String extendedName = prefs.get("name");
@@ -435,7 +435,7 @@ public class BaseNoGui {
     parser.parseArgumentsPhase1();
 
     String sketchbookPath = getSketchbookPath();
-  
+
     // If no path is set, get the default sketchbook folder for this platform
     if (sketchbookPath == null) {
       if (BaseNoGui.getPortableFolder() != null)
@@ -451,7 +451,7 @@ public class BaseNoGui {
     for (String path: parser.getFilenames()) {
       // Correctly resolve relative paths
       File file = absoluteFile(path);
-  
+
       // Fix a problem with systems that use a non-ASCII languages. Paths are
       // being passed in with 8.3 syntax, which makes the sketch loader code
       // unhappy, since the sketch folder naming doesn't match up correctly.
@@ -762,7 +762,7 @@ public class BaseNoGui {
     getPlatform().init();
 
     initPortableFolder();
-    
+
     initParameters(args);
 
     checkInstallationFolder();

@@ -128,6 +128,7 @@ public class Compiler implements MessageConsumer {
 
   public String build(CompilerProgressListener progListener, boolean exportHex) throws RunnerException, PreferencesMapException, IOException {
     this.buildPath = sketch.getBuildPath().getAbsolutePath();
+    sketch.getAssociatedFQBN();
 
     TargetBoard board = BaseNoGui.getTargetBoard();
     if (board == null) {

@@ -131,6 +131,7 @@ public class Preferences extends javax.swing.JDialog {
     checkUpdatesBox = new javax.swing.JCheckBox();
     updateExtensionBox = new javax.swing.JCheckBox();
     saveVerifyUploadBox = new javax.swing.JCheckBox();
+    boardAssociationBox = new javax.swing.JCheckBox();
     jLabel1 = new javax.swing.JLabel();
     jLabel2 = new javax.swing.JLabel();
     scaleSpinner = new javax.swing.JSpinner();
@@ -252,6 +253,9 @@ public class Preferences extends javax.swing.JDialog {
 
     saveVerifyUploadBox.setText(tr("Save when verifying or uploading"));
     checkboxesContainer.add(saveVerifyUploadBox);
+
+    boardAssociationBox.setText(tr("Allow sketch <-> board association"));
+    checkboxesContainer.add(boardAssociationBox);
 
     jLabel1.setText(tr("Interface scale:"));
 
@@ -702,6 +706,7 @@ public class Preferences extends javax.swing.JDialog {
   private javax.swing.ButtonGroup proxyTypeButtonGroup;
   private javax.swing.JLabel requiresRestartLabel;
   private javax.swing.JCheckBox saveVerifyUploadBox;
+  private javax.swing.JCheckBox boardAssociationBox;
   private javax.swing.JSpinner scaleSpinner;
   private javax.swing.JLabel showVerboseLabel;
   private javax.swing.JTextField sketchbookLocationField;
@@ -770,13 +775,13 @@ public class Preferences extends javax.swing.JDialog {
 
     PreferencesData.setBoolean("editor.save_on_verify", saveVerifyUploadBox.isSelected());
 
+    PreferencesData.setBoolean("editor.board_sketch_association", boardAssociationBox.isSelected());
+
     PreferencesData.setBoolean("editor.external", externalEditorBox.isSelected());
 
     PreferencesData.setBoolean("update.check", checkUpdatesBox.isSelected());
 
     PreferencesData.setBoolean("editor.update_extension", updateExtensionBox.isSelected());
-
-    PreferencesData.setBoolean("editor.save_on_verify", saveVerifyUploadBox.isSelected());
 
     PreferencesData.set("boardsmanager.additional.urls", additionalBoardsManagerField.getText().replace("\r\n", "\n").replace("\r", "\n").replace("\n", ","));
 
@@ -837,6 +842,8 @@ public class Preferences extends javax.swing.JDialog {
     updateExtensionBox.setSelected(PreferencesData.get("editor.update_extension") == null || PreferencesData.getBoolean("editor.update_extension"));
 
     saveVerifyUploadBox.setSelected(PreferencesData.getBoolean("editor.save_on_verify"));
+
+    boardAssociationBox.setSelected(PreferencesData.getBoolean("editor.board_sketch_association"));
 
     additionalBoardsManagerField.setText(PreferencesData.get("boardsmanager.additional.urls"));
 
