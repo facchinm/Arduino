@@ -838,6 +838,10 @@ void USBDevice_::poll()
 {
 }
 
+void USBDevice_::setMaxPower(uint16_t mA) {
+	_maxPower = mA;
+}
+
 bool USBDevice_::wakeupHost()
 {
 	// clear any previous wakeup request which might have been set but could be processed at that time

@@ -65,6 +65,7 @@ public:
 	void detach();	// Serial port goes down too...
 	void poll();
 	bool wakeupHost(); // returns false, when wakeup cannot be processed
+	void setMaxPower(uint16_t mA);
 };
 extern USBDevice_ USBDevice;
 
