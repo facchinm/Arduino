@@ -94,4 +94,10 @@ public interface TargetPlatform {
    */
   public TargetPackage getContainerPackage();
 
+  /**
+   * Returns true if the platform contains undefined references
+   * 
+   * @return
+   */
+  public boolean referencesUndefinedPlatform();
 }

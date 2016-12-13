@@ -28,6 +28,7 @@ import java.io.IOException;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Set;
+import java.util.Scanner;
 
 import static processing.app.I18n.format;
 import static processing.app.I18n.tr;
@@ -42,6 +43,7 @@ public class LegacyTargetPlatform implements TargetPlatform {
 
   private final Map<String, TargetBoard> boards = new LinkedHashMap<>();
   private TargetBoard defaultBoard;
+  private boolean undefinedPlatformReference = false;
 
   /**
    * Contains preferences for every defined programmer
@@ -69,8 +71,27 @@ public class LegacyTargetPlatform implements TargetPlatform {
 
     // Load boards
     try {
-      PreferencesMap bPrefs = new PreferencesMap(
-          boardsFile);
+      PreferencesMap bPrefs = new PreferencesMap(boardsFile);
+
+      // Check if boards.txt references another platform
+      // If so, check if the referenced platform has already been loaded
+      // Otherwise, mark undefinedPlatformReference and wait for the second pass
+      Scanner scanner = new Scanner(boardsFile);
+      while (scanner.hasNextLine()) {
+          String line = scanner.nextLine();
+          if(line.contains("#include")) {
+              String[] refPlatform = line.replace("#include", "").trim().split(":");
+              TargetPlatform referencedPlatform = BaseNoGui.getTargetPlatform(refPlatform[0], refPlatform[1]);
+
+              if (referencedPlatform == null) {
+                System.out.println("referencing " + refPlatform[0] + " " + refPlatform[1] + " but not found");
+                undefinedPlatformReference = true;
+              } else {
+                File referencedBoardsFile = new File(referencedPlatform.getFolder(), "boards.txt");
+                bPrefs.load(referencedBoardsFile);
+              }
+          }
+      }
 
       // Allow overriding values in boards.txt. This allows changing
       // boards.txt (e.g. to add user-specific items to a menu), without
@@ -236,6 +257,11 @@ public class LegacyTargetPlatform implements TargetPlatform {
   @Override
   public TargetPackage getContainerPackage() {
     return containerPackage;
+  }
+
+  @Override
+  public boolean referencesUndefinedPlatform() {
+    return undefinedPlatformReference;
   }
 
   @Override

@@ -481,6 +481,7 @@ public class BaseNoGui {
     loadHardware(getHardwareFolder());
     loadContributedHardware(indexer);
     loadHardware(getSketchbookHardwareFolder());
+    rescanHardwareForUndefinedReferences();
     createToolPreferences(indexer.getInstalledTools(), true);
 
     librariesIndexer = new LibrariesIndexer(getSettingsFolder());
@@ -533,6 +534,22 @@ public class BaseNoGui {
    */
   static public boolean isSanitaryName(String name) {
     return sanitizeName(name).equals(name);
+  }
+
+  static protected void rescanHardwareForUndefinedReferences() {
+    try {
+      for (Map.Entry<String,TargetPackage> pack : packages.entrySet()) {
+        for (Map.Entry<String,TargetPlatform> platform : pack.getValue().getPlatforms().entrySet()) {
+          if (platform.getValue().referencesUndefinedPlatform()) {
+            // load platform again
+            TargetPlatform platformReloaded = new LegacyTargetPlatform(platform.getValue().getId(), platform.getValue().getFolder(), pack.getValue());
+            pack.getValue().getPlatforms().remove(platform.getValue());
+            pack.getValue().getPlatforms().put(platform.getKey(), platformReloaded);
+          }
+        }
+      }
+    } catch (TargetPlatformException e) {
+    }
   }
 
   static protected void loadHardware(File folder) {
