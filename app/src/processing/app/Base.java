@@ -364,7 +364,7 @@ public class Base {
         if (selected.isReadOnly()) {
           libraryInstaller.remove(installed, progressListener);
         } else {
-          libraryInstaller.install(selected, installed, progressListener);
+          libraryInstaller.install(selected, progressListener);
         }
       }
 
