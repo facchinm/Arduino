@@ -211,6 +211,7 @@ public class ContributedLibraryTableCellJPanel extends JPanel {
     }
   }
 
+  // TODO Make this a method of Theme
   private JTextPane makeNewDescription() {
     if (getComponentCount() > 0) {
       remove(0);
