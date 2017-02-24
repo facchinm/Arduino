@@ -748,6 +748,20 @@ public class Editor extends JFrame implements RunnerListener {
     File sketchbookTools = new File(BaseNoGui.getSketchbookFolder(), "tools");
     addTools(toolsMenu, sketchbookTools);
 
+    File packagesFolder = BaseNoGui.indexer.getPackagesFolder();
+    File[] folders = packagesFolder.listFiles(new FileFilter() {
+      public boolean accept(File folder) {
+        if (folder.isDirectory()) {
+          File toolFolder = new File(folder.getPath(), "tools");
+          if (toolFolder.isDirectory()) {
+            addTools(toolsMenu, toolFolder);
+            return true;
+          }
+        }
+        return false;
+      }
+    });
+
     toolsMenu.addSeparator();
 
     numTools = toolsMenu.getItemCount();
