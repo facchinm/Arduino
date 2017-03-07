@@ -33,6 +33,7 @@ import cc.arduino.contributions.packages.ContributedPlatform;
 import cc.arduino.contributions.packages.ContributionInstaller;
 import cc.arduino.contributions.packages.ContributionsIndexer;
 import cc.arduino.contributions.packages.ui.ContributionManagerUI;
+import cc.arduino.contributions.packages.ui.ContributionManagerPluginsUI;
 import cc.arduino.files.DeleteFilesOnShutdown;
 import cc.arduino.packages.DiscoveryManager;
 import cc.arduino.view.Event;
@@ -1348,6 +1349,38 @@ public class Base {
     rebuildExamplesMenu(Editor.examplesMenu);
   }
 
+  public void openPluginsManager(final String filterText, String dropdownItem) throws Exception {
+    if (contributionsSelfCheck != null) {
+      contributionsSelfCheck.cancel();
+    }
+    @SuppressWarnings("serial")
+    ContributionManagerPluginsUI managerUI = new ContributionManagerPluginsUI(activeEditor, contributionInstaller) {
+      @Override
+      protected void onIndexesUpdated() throws Exception {
+        BaseNoGui.initPackages();
+        rebuildBoardsMenu();
+        rebuildProgrammerMenu();
+        updateUI();
+        if (StringUtils.isNotEmpty(dropdownItem)) {
+          selectDropdownItemByClassName(dropdownItem);
+        }
+        if (StringUtils.isNotEmpty(filterText)) {
+          setFilterText(filterText);
+        }
+      }
+    };
+    managerUI.setLocationRelativeTo(activeEditor);
+    managerUI.updateUI();
+    managerUI.setVisible(true);
+    // Installer dialog is modal, waits here until closed
+
+    // Reload all boards (that may have been installed/updated/removed)
+    BaseNoGui.initPackages();
+    rebuildBoardsMenu();
+    rebuildProgrammerMenu();
+    onBoardOrPortChange();
+  }
+
   public void openBoardsManager(final String filterText, String dropdownItem) throws Exception {
     if (contributionsSelfCheck != null) {
       contributionsSelfCheck.cancel();
@@ -1398,6 +1431,22 @@ public class Base {
         }
         try {
           openBoardsManager(filterText, dropdownItem);
+        } catch (Exception e) {
+          //TODO show error
+          e.printStackTrace();
+        }
+      }
+    }));
+    boardMenu.add(new JMenuItem(new AbstractAction(tr("Plugins Manager...")) {
+      public void actionPerformed(ActionEvent actionevent) {
+        String filterText = "";
+        String dropdownItem = "";
+        if (actionevent instanceof Event) {
+          filterText = ((Event) actionevent).getPayload().get("filterText").toString();
+          dropdownItem = ((Event) actionevent).getPayload().get("dropdownItem").toString();
+        }
+        try {
+          openPluginsManager(filterText, dropdownItem);
         } catch (Exception e) {
           //TODO show error
           e.printStackTrace();

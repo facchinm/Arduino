@@ -29,11 +29,11 @@
 
 package cc.arduino.contributions.packages.filters;
 
-import cc.arduino.contributions.packages.ContributedPlatform;
+import cc.arduino.contributions.DownloadableContribution;
 
 import java.util.function.Predicate;
 
-public class CategoryPredicate implements Predicate<ContributedPlatform> {
+public class CategoryPredicate implements Predicate<DownloadableContribution> {
 
   private final String category;
 
@@ -42,7 +42,7 @@ public class CategoryPredicate implements Predicate<ContributedPlatform> {
   }
 
   @Override
-  public boolean test(ContributedPlatform input) {
+  public boolean test(DownloadableContribution input) {
     return input.getCategory() != null && category.equals(input.getCategory());
   }
 

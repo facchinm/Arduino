@@ -29,7 +29,7 @@
 
 package cc.arduino.contributions.packages.ui;
 
-import cc.arduino.contributions.packages.ContributedPlatform;
+import cc.arduino.contributions.DownloadableContribution;
 import cc.arduino.contributions.packages.filters.CategoryPredicate;
 import cc.arduino.contributions.ui.DropdownItem;
 
@@ -37,7 +37,7 @@ import java.util.function.Predicate;
 
 import static processing.app.I18n.tr;
 
-public class DropdownCoreOfCategoryItem implements DropdownItem<ContributedPlatform> {
+public class DropdownCoreOfCategoryItem implements DropdownItem<DownloadableContribution> {
 
   private final String category;
 
@@ -50,7 +50,7 @@ public class DropdownCoreOfCategoryItem implements DropdownItem<ContributedPlatf
   }
 
   @Override
-  public Predicate<ContributedPlatform> getFilterPredicate() {
+  public Predicate<DownloadableContribution> getFilterPredicate() {
     return new CategoryPredicate(category);
   }
 

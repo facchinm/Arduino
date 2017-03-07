@@ -30,13 +30,13 @@
 package cc.arduino.contributions.packages.filters;
 
 import cc.arduino.contributions.VersionComparator;
-import cc.arduino.contributions.packages.ContributedPlatform;
+import cc.arduino.contributions.DownloadableContribution;
 import processing.app.BaseNoGui;
 
 import java.util.List;
 import java.util.function.Predicate;
 
-public class UpdatablePlatformPredicate implements Predicate<ContributedPlatform> {
+public class UpdatablePlatformPredicate implements Predicate<DownloadableContribution> {
 
   private final VersionComparator versionComparator;
 
@@ -45,16 +45,16 @@ public class UpdatablePlatformPredicate implements Predicate<ContributedPlatform
   }
 
   @Override
-  public boolean test(ContributedPlatform contributedPlatform) {
+  public boolean test(DownloadableContribution contributedPlatform) {
     String packageName = contributedPlatform.getParentPackage().getName();
     String architecture = contributedPlatform.getArchitecture();
 
-    ContributedPlatform installed = BaseNoGui.indexer.getInstalled(packageName, architecture);
+    DownloadableContribution installed = BaseNoGui.indexer.getInstalled(packageName, architecture);
     if (installed == null) {
       return false;
     }
 
-    List<ContributedPlatform> platforms = BaseNoGui.indexer.getIndex().findPlatforms(packageName, architecture);
+    List<DownloadableContribution> platforms = BaseNoGui.indexer.getIndex().findDownloadableContributions(packageName, architecture);
     return platforms.stream()
       .filter(platform -> versionComparator.greaterThan(platform.getParsedVersion(), installed.getParsedVersion()))
       .count() > 0;

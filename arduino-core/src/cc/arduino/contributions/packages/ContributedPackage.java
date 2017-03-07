@@ -30,6 +30,7 @@
 package cc.arduino.contributions.packages;
 
 import java.util.List;
+import cc.arduino.contributions.DownloadableContribution;
 
 public abstract class ContributedPackage {
 
@@ -42,6 +43,10 @@ public abstract class ContributedPackage {
   public abstract String getEmail();
 
   public abstract List<ContributedPlatform> getPlatforms();
+
+  public abstract List<DownloadableContribution> getDownloadableContributions();
+
+  public abstract List<ContributedPlugin> getPlugins();
 
   public abstract List<ContributedTool> getTools();
 
@@ -56,6 +61,17 @@ public abstract class ContributedPackage {
     for (ContributedPlatform platform : getPlatforms()) {
       if (platform.getArchitecture().equals(architecture) && version.equals(platform.getParsedVersion()))
         return platform;
+    }
+    return null;
+  }
+
+  public ContributedPlugin findPlugin(String architecture, String version) {
+    if (architecture == null || version == null) {
+      return null;
+    }
+    for (ContributedPlugin plugin : getPlugins()) {
+      if (plugin.getArchitecture().equals(architecture) && version.equals(plugin.getParsedVersion()))
+        return plugin;
     }
     return null;
   }

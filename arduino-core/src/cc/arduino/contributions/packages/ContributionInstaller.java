@@ -72,6 +72,43 @@ public class ContributionInstaller {
     this.signatureVerifier = signatureVerifier;
   }
 
+  public synchronized List<String> install(ContributedPlugin contributedPlugin, ProgressListener progressListener) throws Exception {
+    List<String> errors = new LinkedList<>();
+    if (contributedPlugin.isInstalled()) {
+      throw new Exception("Platform is already installed!");
+    }
+
+    DownloadableContributionsDownloader downloader = new DownloadableContributionsDownloader(BaseNoGui.indexer.getStagingFolder());
+
+    // Calculate progress increases
+    MultiStepProgress progress = new MultiStepProgress(2);
+
+    // Download all
+    try {
+      // Download plugin
+      downloader.download(contributedPlugin, progress, tr("Downloading plugin."), progressListener);
+      progress.stepDone();
+    } catch (InterruptedException e) {
+      // Download interrupted... just exit
+      return errors;
+    }
+
+    ContributedPackage pack = contributedPlugin.getParentPackage();
+    File packageFolder = new File(BaseNoGui.indexer.getPackagesFolder(), pack.getName());
+
+    Path destFolder = Paths.get(BaseNoGui.indexer.getPackagesFolder().getAbsolutePath(), contributedPlugin.getParentPackage().getMaintainer(), "tools", contributedPlugin.getName(), "tool");
+    Files.createDirectories(destFolder);
+    new ArchiveExtractor(platform).extract(contributedPlugin.getDownloadedFile(), destFolder.toFile(), 1);
+    contributedPlugin.setInstalled(true);
+    contributedPlugin.setInstalledFolder(destFolder.toFile());
+    progress.stepDone();
+
+    progress.setStatus(tr("Installation completed!"));
+    progressListener.onProgress(progress);
+
+    return errors;
+  }
+
   public synchronized List<String> install(ContributedPlatform contributedPlatform, ProgressListener progressListener) throws Exception {
     List<String> errors = new LinkedList<>();
     if (contributedPlatform.isInstalled()) {
@@ -276,6 +313,20 @@ public class ContributionInstaller {
     FileUtils.recursiveDelete(contributedPlatform.getInstalledFolder());
     contributedPlatform.setInstalled(false);
     contributedPlatform.setInstalledFolder(null);
+
+    return errors;
+  }
+
+  public synchronized List<String> remove(ContributedPlugin contributedPlugin) {
+    BaseNoGui.indexer.getPackages().stream().flatMap(p -> p.getPlugins().stream()).filter(new InstalledPredicate()).collect(Collectors.toList());
+    if (contributedPlugin == null || contributedPlugin.isReadOnly()) {
+      return new LinkedList<>();
+    }
+    List<String> errors = new LinkedList<>();
+
+    FileUtils.recursiveDelete(contributedPlugin.getInstalledFolder());
+    contributedPlugin.setInstalled(false);
+    contributedPlugin.setInstalledFolder(null);
 
     return errors;
   }

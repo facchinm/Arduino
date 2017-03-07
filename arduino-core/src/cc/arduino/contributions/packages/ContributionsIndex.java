@@ -33,6 +33,7 @@ import cc.arduino.contributions.DownloadableContributionBuiltInAtTheBottomCompar
 import cc.arduino.contributions.filters.DownloadableContributionWithVersionPredicate;
 import cc.arduino.contributions.filters.InstalledPredicate;
 import cc.arduino.contributions.packages.filters.PlatformArchitecturePredicate;
+import cc.arduino.contributions.DownloadableContribution;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -50,6 +51,22 @@ public abstract class ContributionsIndex {
         return pack;
     }
     return null;
+  }
+
+  public List<DownloadableContribution> findDownloadableContributions(String packageName, final String platformArch) {
+    if (packageName == null || platformArch == null) {
+      return null;
+
+    }
+    ContributedPackage aPackage = findPackage(packageName);
+    if (aPackage == null) {
+      return null;
+    }
+    return aPackage.getDownloadableContributions().stream().collect(Collectors.toList());
+  }
+
+  private List<ContributedPlatform> getDownloadableContributions() {
+    return getPackages().stream().map(ContributedPackage::getPlatforms).flatMap(Collection::stream).collect(Collectors.toList());
   }
 
   public List<ContributedPlatform> findPlatforms(String packageName, final String platformArch) {
@@ -104,6 +121,60 @@ public abstract class ContributionsIndex {
 
   private List<ContributedPlatform> getPlatforms() {
     return getPackages().stream().map(ContributedPackage::getPlatforms).flatMap(Collection::stream).collect(Collectors.toList());
+  }
+
+  public List<ContributedPlugin> findPlugins(String packageName, final String platformArch) {
+    if (packageName == null || platformArch == null) {
+      return null;
+
+    }
+    ContributedPackage aPackage = findPackage(packageName);
+    if (aPackage == null) {
+      return null;
+    }
+    return aPackage.getPlugins().stream().collect(Collectors.toList());
+  }
+
+  public ContributedPlugin findPlugin(String packageName, final String platformArch, final String platformVersion) {
+    if (platformVersion == null) {
+      return null;
+
+    }
+
+    Collection<ContributedPlugin> platformsByName = findPlugins(packageName, platformArch);
+    if (platformsByName == null) {
+      return null;
+    }
+
+    Collection<ContributedPlugin> platforms = platformsByName.stream().filter(new DownloadableContributionWithVersionPredicate(platformVersion)).collect(Collectors.toList());
+    if (platforms.isEmpty()) {
+      return null;
+    }
+
+    return platforms.iterator().next();
+  }
+
+  public List<ContributedPlugin> getInstalledPlugins() {
+    return getPlugins().stream().filter(new InstalledPredicate()).collect(Collectors.toList());
+  }
+
+  public ContributedPlugin getInstalledPlugin(String packageName, String platformArch) {
+    List<ContributedPlugin> platforms = findPlugins(packageName, platformArch);
+    if (platforms == null) {
+      return null;
+    }
+    List<ContributedPlugin> installedPlugins = platforms.stream().filter(new InstalledPredicate()).collect(Collectors.toList());
+    Collections.sort(installedPlugins, new DownloadableContributionBuiltInAtTheBottomComparator());
+
+    if (installedPlugins.isEmpty()) {
+      return null;
+    }
+
+    return installedPlugins.get(0);
+  }
+
+  private List<ContributedPlugin> getPlugins() {
+    return getPackages().stream().map(ContributedPackage::getPlugins).flatMap(Collection::stream).collect(Collectors.toList());
   }
 
   private final List<String> categories = new ArrayList<>();

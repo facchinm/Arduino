@@ -29,27 +29,35 @@
 
 package cc.arduino.contributions.packages.ui;
 
-import cc.arduino.contributions.filters.NoopPredicate;
-import cc.arduino.contributions.DownloadableContribution;
-import cc.arduino.contributions.ui.DropdownItem;
+import java.awt.Color;
+import java.awt.Component;
 
-import java.util.function.Predicate;
+import javax.swing.JTable;
+import javax.swing.table.TableCellRenderer;
 
-import static processing.app.I18n.tr;
+@SuppressWarnings("serial")
+public class ContributedPluginTableCellRenderer implements TableCellRenderer {
 
-public class DropdownAllCoresItem implements DropdownItem<DownloadableContribution> {
+  public Component getTableCellRendererComponent(JTable table, Object value,
+                                                 boolean isSelected,
+                                                 boolean hasFocus, int row,
+                                                 int column) {
+    ContributedPluginTableCellJPanel cell = new ContributedPluginTableCellJPanel();
+    cell.setButtonsVisible(false);
+    cell.update(table, value, isSelected, false);
 
-  public String toString() {
-    return tr("All");
+    if (row % 2 == 0) {
+      cell.setBackground(new Color(236, 241, 241)); // #ecf1f1
+    } else {
+      cell.setBackground(new Color(255, 255, 255));
+    }
+
+    int height = new Double(cell.getPreferredSize().getHeight()).intValue();
+    if (table.getRowHeight(row) < height) {
+      table.setRowHeight(row, height);
+    }
+
+    return cell;
   }
 
-  @Override
-  public Predicate<DownloadableContribution> getFilterPredicate() {
-    return new NoopPredicate<>();
-  }
-
-  @Override
-  public boolean equals(Object obj) {
-    return obj instanceof DropdownAllCoresItem;
-  }
 }

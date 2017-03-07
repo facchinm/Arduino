@@ -30,7 +30,7 @@
 package cc.arduino.contributions;
 
 import com.github.zafarkhaja.semver.Version;
-
+import cc.arduino.contributions.packages.ContributedPackage;
 import java.io.File;
 
 public abstract class DownloadableContribution {
@@ -50,6 +50,12 @@ public abstract class DownloadableContribution {
   public abstract long getSize();
 
   public abstract String getArchiveFileName();
+
+  public abstract String getCategory();
+
+  public abstract String getArchitecture();
+
+  public abstract ContributedPackage getParentPackage();
 
   public boolean isDownloaded() {
     return downloaded;

@@ -29,6 +29,7 @@
 package processing.app.packages;
 
 import cc.arduino.Constants;
+import cc.arduino.contributions.packages.ContributedPackage;
 import cc.arduino.contributions.libraries.ContributedLibrary;
 import cc.arduino.contributions.libraries.ContributedLibraryReference;
 import processing.app.helpers.PreferencesMap;
@@ -241,6 +242,16 @@ public class UserLibrary extends ContributedLibrary {
   @Override
   public String getArchiveFileName() {
     return null;
+  }
+
+  @Override
+  public ContributedPackage getParentPackage() {
+    return null;
+  }
+
+  @Override
+  public String getArchitecture() {
+    return "";
   }
 
   @Override
