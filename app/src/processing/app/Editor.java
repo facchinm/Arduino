@@ -2268,6 +2268,10 @@ public class Editor extends JFrame implements RunnerListener {
     }
   }
 
+  public boolean isCompiling() {
+    return uploading;
+  }
+
   private void resumeOrCloseSerialMonitor() {
     // Return the serial monitor window to its initial state
     if (serialMonitor != null) {
