@@ -32,7 +32,7 @@
 
 #include "wiring_private.h"
 
-static void nothing(void) {
+static void nothing(__attribute__((unused)) void* a) {
 }
 
 static volatile voidFuncPtrParam intFunc[EXTERNAL_NUM_INTERRUPTS] = {
@@ -65,7 +65,7 @@ static volatile voidFuncPtrParam intFunc[EXTERNAL_NUM_INTERRUPTS] = {
     nothing,
 #endif
 };
-static volatile void* intFuncParam[EXTERNAL_NUM_INTERRUPTS];
+static void* intFuncParam[EXTERNAL_NUM_INTERRUPTS];
 // volatile static voidFuncPtr twiIntFunc;
 
 void attachInterrupt(uint8_t interruptNum, voidFuncPtr userFunc, int mode) {
