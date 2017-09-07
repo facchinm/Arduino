@@ -12,7 +12,7 @@ using voidTemplateFuncPtrParam =  void (*)(T param);
 
 template<typename T> struct __container__ {
 	void* param;
-	voidTemplateFuncPtrParam<T>* function;
+	voidTemplateFuncPtrParam<T> function;
 };
 
 // C++ only overloaded version of attachInterrupt function
@@ -20,14 +20,14 @@ template<typename T> void attachInterrupt(uint8_t interruptNum, voidTemplateFunc
 
   struct __container__<T> *cont = new __container__<T>();
   cont->param = &param;
-  cont->function = &userFunc;
+  cont->function = userFunc;
 
   // TODO: check lambda scope
   // TODO: add structure to delete(__container__) when detachInterrupt() is called
   auto f = [](void* a) -> void
   {
     T* param = (T*)(((struct __container__<T>*)a)->param);
-    (*((struct __container__<T>*)a)->function)(*param);
+    (((struct __container__<T>*)a)->function)(*param);
   };
 
   attachInterruptParam(interruptNum, f, mode, cont);
