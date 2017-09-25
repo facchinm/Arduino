@@ -72,6 +72,17 @@ import java.util.ArrayList;
 import static processing.app.I18n.tr;
 import static processing.app.Theme.scale;
 
+import processing.app.helpers.FileUtils;
+import static java.nio.file.StandardWatchEventKinds.*;
+import java.nio.file.WatchService;
+import java.nio.file.WatchKey;
+import java.nio.file.WatchEvent;
+import java.nio.file.FileSystems;
+import java.nio.file.Path;
+import java.io.File;
+
+import com.github.axet.desktop.os.mac.cocoa.NSMenu;
+
 /**
  * Main editor panel for the Processing Development Environment.
  */
@@ -478,6 +489,11 @@ public class Editor extends JFrame implements RunnerListener {
       }
     });
     menubar.add(fileMenu);
+
+    if (OSUtils.isMacOS()) {
+      NSMenu m = new NSMenu();
+      m.setAutoenablesItems(false);
+    }
 
     menubar.add(buildEditMenu());
 
