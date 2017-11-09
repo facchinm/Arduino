@@ -29,11 +29,8 @@
 
 package cc.arduino.contributions.ui;
 
-import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.Rectangle;
-import java.util.ArrayList;
-import java.util.List;
 
 import javax.swing.AbstractCellEditor;
 import javax.swing.JTextPane;
@@ -41,8 +38,6 @@ import javax.swing.table.TableCellEditor;
 import javax.swing.text.BadLocationException;
 
 public abstract class InstallerTableCell extends AbstractCellEditor implements TableCellEditor {
-
-  protected List<Component> cellList = new ArrayList<Component>();
 
   abstract public void setEnabled(boolean b);
 
@@ -62,10 +57,6 @@ public abstract class InstallerTableCell extends AbstractCellEditor implements T
       throw new RuntimeException(e);
     }
 
-  }
-
-  public void clearCache() {
-    cellList.clear();
   }
 
 }

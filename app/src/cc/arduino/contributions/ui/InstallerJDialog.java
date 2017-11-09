@@ -85,7 +85,6 @@ public abstract class InstallerJDialog<T> extends JDialog {
 
   // Real contribution table
   protected JTable contribTable;
-  private InstallerTableCell cellEditor;
   // Model behind the table
   protected final FilteredAbstractTableModel<T> contribModel;
   private final JButton closeButton;
@@ -126,7 +125,6 @@ public abstract class InstallerJDialog<T> extends JDialog {
             contribTable.getCellEditor().stopCellEditing();
           }
           updateIndexFilter(filters, categoryFilter);
-          cellEditor.clearCache();
           if (contribModel.getRowCount() == 1) {
             // TODO: understand why it doesn't work
             //contribTable.addRowSelectionInterval(0, 0);
@@ -189,8 +187,7 @@ public abstract class InstallerJDialog<T> extends JDialog {
       TableColumnModel tcm = contribTable.getColumnModel();
       TableColumn col = tcm.getColumn(0);
       col.setCellRenderer(createCellRenderer());
-      cellEditor = createCellEditor();
-      col.setCellEditor(cellEditor);
+      col.setCellEditor(createCellEditor());
       col.setResizable(true);
     }
 
@@ -263,7 +260,6 @@ public abstract class InstallerJDialog<T> extends JDialog {
   public void updateIndexFilter(String[] filters, Predicate<T>... additionalFilters) {
     Stream<Predicate<T>> notNullAdditionalFilters = Stream.of(additionalFilters).filter(filter -> filter != null);
     contribModel.updateIndexFilter(filters, notNullAdditionalFilters);
-    cellEditor.clearCache();
   }
 
   public void setErrorMessage(String message) {
@@ -312,7 +308,6 @@ public abstract class InstallerJDialog<T> extends JDialog {
           contribTable.getCellEditor().stopCellEditing();
         }
         updateIndexFilter(filters, categoryFilter);
-        cellEditor.clearCache();
       }
     }
   };
