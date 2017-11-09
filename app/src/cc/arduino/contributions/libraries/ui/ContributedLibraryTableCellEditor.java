@@ -33,7 +33,6 @@ import static processing.app.I18n.tr;
 
 import java.awt.Color;
 import java.awt.Component;
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
@@ -54,8 +53,6 @@ import cc.arduino.utils.ReverseComparator;
 @SuppressWarnings("serial")
 public class ContributedLibraryTableCellEditor extends InstallerTableCell {
 
-  private List<Component> cellList = new ArrayList<Component>();
-
   private ContributedLibraryReleases editorValue;
   private ContributedLibraryTableCellJPanel editorCell;
 
@@ -69,10 +66,6 @@ public class ContributedLibraryTableCellEditor extends InstallerTableCell {
                                                boolean isSelected, int row,
                                                int column) {
     editorValue = (ContributedLibraryReleases) value;
-
-    if (cellList.size() > row && cellList.get(row) != null) {
-      return cellList.get(row);
-    }
 
     editorCell = new ContributedLibraryTableCellJPanel(table, value, true);
     editorCell.installButton
@@ -142,9 +135,6 @@ public class ContributedLibraryTableCellEditor extends InstallerTableCell {
         .setVisible(installed == null && uninstalledReleases.size() > 1);
 
     editorCell.setBackground(new Color(218, 227, 227)); // #dae3e3
-
-    cellList.add(row, editorCell);
-
     return editorCell;
   }
 
