@@ -130,6 +130,7 @@ public class Preferences extends javax.swing.JDialog {
     checkboxesContainer = new javax.swing.JPanel();
     displayLineNumbersBox = new javax.swing.JCheckBox();
     enableCodeFoldingBox = new javax.swing.JCheckBox();
+    enableBookmarks = new javax.swing.JCheckBox();
     verifyUploadBox = new javax.swing.JCheckBox();
     externalEditorBox = new javax.swing.JCheckBox();
     cacheCompiledCore = new javax.swing.JCheckBox();
@@ -257,6 +258,9 @@ public class Preferences extends javax.swing.JDialog {
 
     enableCodeFoldingBox.setText(tr("Enable Code Folding"));
     checkboxesContainer.add(enableCodeFoldingBox);
+
+    enableBookmarks.setText(tr("Enable Bookmarks"));
+    checkboxesContainer.add(enableBookmarks);
 
     verifyUploadBox.setText(tr("Verify code after upload"));
     checkboxesContainer.add(verifyUploadBox);
@@ -736,6 +740,7 @@ public class Preferences extends javax.swing.JDialog {
   private javax.swing.JLabel comboWarningsLabel;
   private javax.swing.JCheckBox displayLineNumbersBox;
   private javax.swing.JCheckBox enableCodeFoldingBox;
+  private javax.swing.JCheckBox enableBookmarks;
   private javax.swing.JButton extendedAdditionalUrlFieldWindow;
   private javax.swing.JCheckBox externalEditorBox;
   private javax.swing.JCheckBox cacheCompiledCore;
@@ -838,6 +843,8 @@ public class Preferences extends javax.swing.JDialog {
 
     PreferencesData.setBoolean("editor.code_folding", enableCodeFoldingBox.isSelected());
 
+    PreferencesData.setBoolean("editor.bookmarks", enableBookmarks.isSelected());
+
     PreferencesData.setBoolean("upload.verify", verifyUploadBox.isSelected());
 
     PreferencesData.setBoolean("editor.save_on_verify", saveVerifyUploadBox.isSelected());
@@ -913,6 +920,8 @@ public class Preferences extends javax.swing.JDialog {
     displayLineNumbersBox.setSelected(PreferencesData.getBoolean("editor.linenumbers"));
 
     enableCodeFoldingBox.setSelected(PreferencesData.getBoolean("editor.code_folding"));
+
+    enableBookmarks.setSelected(PreferencesData.getBoolean("editor.bookmarks"));
 
     verifyUploadBox.setSelected(PreferencesData.getBoolean("upload.verify"));
 
