@@ -193,10 +193,31 @@ public class EditorStatus extends JPanel {
     setCursor(null);
   }
 
+  static Thread progressThread = null;
+
   public void progressUpdate(int value) {
     if (progressBar == null) return;
+    if (progressThread != null) {
+      progressThread.interrupt();
+    }
+    progressBar.setIndeterminate(false);
     progressBar.setValue(value);
     repaint();
+    // Repaint in a new thread
+    progressThread = new Thread(new Runnable() {
+      @Override
+      public void run() {
+        try {
+          Thread.sleep(1000);
+          progressBar.setIndeterminate(true);
+          progressThread = null;
+        } catch (InterruptedException e) {
+          // do nothing
+          progressThread = null;
+        }
+      }
+    });
+    progressThread.start();
   }
 
   public void paintComponent(Graphics screen) {
