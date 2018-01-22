@@ -144,6 +144,7 @@ public class Preferences extends javax.swing.JDialog {
     autoScaleCheckBox = new javax.swing.JCheckBox();
     jLabel3 = new javax.swing.JLabel();
     javax.swing.JPanel jPanel4 = new javax.swing.JPanel();
+    javax.swing.JPanel jPanel5 = new javax.swing.JPanel();
     noProxy = new javax.swing.JRadioButton();
     autoProxy = new javax.swing.JRadioButton();
     manualProxy = new javax.swing.JRadioButton();
@@ -333,7 +334,6 @@ public class Preferences extends javax.swing.JDialog {
             .addComponent(sketchbookLocationField, javax.swing.GroupLayout.DEFAULT_SIZE, 553, Short.MAX_VALUE)
             .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
             .addComponent(browseButton))
-          .addComponent(checkboxesContainer, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
           .addGroup(jPanel1Layout.createSequentialGroup()
             .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
               .addGroup(jPanel1Layout.createSequentialGroup()
@@ -429,14 +429,13 @@ public class Preferences extends javax.swing.JDialog {
           .addComponent(comboWarningsLabel)
           .addComponent(comboWarnings, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-        .addComponent(checkboxesContainer, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
         .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
           .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
             .addComponent(additionalBoardsManagerLabel)
             .addComponent(additionalBoardsManagerField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
           .addComponent(extendedAdditionalUrlFieldWindow))
-        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
         .addComponent(morePreferencesLabel)
         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
         .addComponent(preferencesFileLabel)
@@ -598,6 +597,24 @@ public class Preferences extends javax.swing.JDialog {
 
     jTabbedPane1.addTab(tr("Network"), jPanel4);
 
+    javax.swing.GroupLayout jPanel5Layout = new javax.swing.GroupLayout(jPanel5);
+    jPanel5.setLayout(jPanel5Layout);
+    jPanel5Layout.setHorizontalGroup(
+      jPanel5Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+        .addGroup(jPanel5Layout.createSequentialGroup()
+          .addContainerGap()
+            .addComponent(checkboxesContainer, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+    ));
+
+    jPanel5Layout.setVerticalGroup(
+      jPanel5Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+      .addGroup(jPanel5Layout.createSequentialGroup()
+        .addContainerGap()
+          .addComponent(checkboxesContainer, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+    ));
+
+    jTabbedPane1.addTab(tr("Advanced"), jPanel5);
+
     jPanel2.add(jTabbedPane1);
 
     okButton.setText(I18n.PROMPT_OK);
@@ -628,9 +645,11 @@ public class Preferences extends javax.swing.JDialog {
     jPanel3Layout.setVerticalGroup(
       jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
       .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel3Layout.createSequentialGroup()
+        .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
         .addGroup(jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
           .addComponent(okButton)
-          .addComponent(cancelButton)))
+          .addComponent(cancelButton))
+        .addContainerGap())
     );
 
     jPanel2.add(jPanel3);
@@ -639,13 +658,13 @@ public class Preferences extends javax.swing.JDialog {
     getContentPane().setLayout(layout);
     layout.setHorizontalGroup(
       layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-      .addGap(0, 691, Short.MAX_VALUE)
+      .addGap(0, 600, Short.MAX_VALUE)
       .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
         .addComponent(jPanel2, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
     );
     layout.setVerticalGroup(
       layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-      .addGap(0, 580, Short.MAX_VALUE)
+      .addGap(0, 400, Short.MAX_VALUE)
       .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
         .addComponent(jPanel2, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
     );
