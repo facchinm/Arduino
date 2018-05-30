@@ -1019,9 +1019,10 @@
 
   <target name="untar-unzip-sha256">
     <!-- get file extension -->
-    <basename property="filename" file="${archive_file}" suffix=".zip"/>
+    <basename property="filename" file="${archive_file}"/>
+    <basename property="filename_without_zip" file="${archive_file}" suffix=".zip"/>
     <condition property="isNotZip">
-      <equals arg1="${filename}" arg2="${archive_file}"/>
+      <equals arg1="${filename}" arg2="${filename_without_zip}"/>
     </condition>
     <antcall target="untar-sha256-enable"/>
     <antcall target="unzip-sha256-enable"/>
@@ -1227,7 +1228,7 @@
 
   <target name="windows-build-avr-toolchain">
     <antcall target="toolchain-bundle">
-      <param name="unpack_target" value="unzip-sha256"/>
+      <param name="unpack_target" value="untar-unzip-sha256"/>
       <param name="arch_name" value="${BUNDLED_CORE}"/>
       <param name="core_maintainer" value="${BUNDLED_CORE_MAINTAINER}"/>
       <param name="gcc_name" value="${BUNDLED_COMPILER}"/>
