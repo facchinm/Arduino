@@ -1807,7 +1807,14 @@ public class Editor extends JFrame implements RunnerListener {
         }
 
         // create properly named folder
-        File properFolder = new File(sketchFile.getParent(), properParent);
+        File properFolder;
+        if (onlyContainsSketchFiles(sketchFile.getParent())) {
+          // Move the whole folder, so properFolder needs to be created one level above
+          properFolder = new File(new File(sketchFile.getParent()).getParent(), properParent);
+        } else {
+          properFolder = new File(sketchFile.getParent(), properParent);
+        }
+
         if (properFolder.exists()) {
           Base.showWarning(tr("Error"), I18n.format(tr("A folder named \"{0}\" already exists. " +
             "Can't open sketch."), properParent), null);
@@ -1821,14 +1828,20 @@ public class Editor extends JFrame implements RunnerListener {
         // copy the sketch inside
         File properPdeFile = new File(properFolder, sketchFile.getName());
         try {
-          FileUtils.copy(new File(sketchFile.getParent()), properFolder);
+          if (onlyContainsSketchFiles(sketchFile.getParent())) {
+            File dir = new File(sketchFile.getParent());
+            FileUtils.copy(dir, properFolder);
+            // remove the original folder, so user doesn't get confused
+            FileUtils.recursiveDelete(dir);
+          } else {
+            Base.copyFile(sketchFile, properPdeFile);
+            // remove the original file, so user doesn't get confused
+            sketchFile.delete();
+          }
         } catch (IOException e) {
           Base.showWarning(tr("Error"), tr("Could not copy to a proper location."), e);
           return false;
         }
-
-        // remove the original file, so user doesn't get confused
-        sketchFile.delete();
 
         // update with the new path
         file = properPdeFile;
@@ -1868,6 +1881,40 @@ public class Editor extends JFrame implements RunnerListener {
     };
 
     // opening was successful
+    return true;
+  }
+
+  private boolean allowedExtension(String fileName, String[] validExtensions) {
+    int i = fileName.lastIndexOf('.');
+    if (i > 0) {
+        String ext = fileName.substring(i+1).toLowerCase();
+        if (!Arrays.asList(validExtensions).contains(ext)) {
+          return false;
+        }
+    }
+    // no extension or valid extension
+    return true;
+  }
+
+  private boolean onlyContainsSketchFiles(String path) {
+    File folder = new File(path);
+    File[] listOfFiles = folder.listFiles();
+
+    for (int i = 0; i < listOfFiles.length; i++) {
+      String name = listOfFiles[i].getName();
+      if (listOfFiles[i].isFile()) {
+        // allowed files extensions are only .ino, .h, .hpp, .c, .cpp (all cases)
+        String[] valid = {"ino", "h", "hpp" , "c" , "cpp", "pde"};
+        if (!allowedExtension(name, valid)) {
+          return false;
+        }
+      } else if (listOfFiles[i].isDirectory()) {
+        // allowed dir names are only src and extras , plus source control folders
+        if (name != "src" && name != "extras" && !FileUtils.SOURCE_CONTROL_FOLDERS.contains(name)) {
+          return false;
+        }
+      }
+    }
     return true;
   }
 

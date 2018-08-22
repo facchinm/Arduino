@@ -10,7 +10,7 @@ import java.util.regex.Pattern;
 
 public class FileUtils {
 
-  private static final List<String> SOURCE_CONTROL_FOLDERS = Arrays.asList("CVS", "RCS", ".git", ".svn", ".hg", ".bzr");
+  public static final List<String> SOURCE_CONTROL_FOLDERS = Arrays.asList("CVS", "RCS", ".git", ".svn", ".hg", ".bzr");
   private static final Pattern BACKSLASH = Pattern.compile("\\\\");
 
   /**
@@ -62,7 +62,7 @@ public class FileUtils {
           // Avoid recursive copy of folders
           continue;
       }
-      if (file.isDirectory() && !SOURCE_CONTROL_FOLDERS.contains(file.getName())) {
+      if (file.isDirectory()) {
         if (!destFile.exists() && !destFile.mkdir()) {
           throw new IOException("Unable to create folder: " + destFile);
         }
