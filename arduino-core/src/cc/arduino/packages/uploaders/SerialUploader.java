@@ -121,8 +121,6 @@ public class SerialUploader extends Uploader {
         validatePattern(pattern, prefs);
         String[] cmd = StringReplacer.formatAndSplit(pattern, prefs, true);
         uploadResult = executeUploadCommand(cmd);
-      } catch (Exception e) {
-        throw new RunnerException(e);
       } finally {
         BaseNoGui.getDiscoveryManager().getSerialDiscoverer().pausePolling(false);
       }
@@ -217,10 +215,6 @@ public class SerialUploader extends Uploader {
       validatePattern(pattern, prefs);
       String[] cmd = StringReplacer.formatAndSplit(pattern, prefs, true);
       uploadResult = executeUploadCommand(cmd);
-    } catch (RunnerException e) {
-      throw e;
-    } catch (Exception e) {
-      throw new RunnerException(e);
     } finally {
       BaseNoGui.getDiscoveryManager().getSerialDiscoverer().pausePolling(false);
     }
@@ -360,10 +354,6 @@ private String waitForUploadPort(String uploadPort, List<String> before) throws 
       validatePattern(pattern, prefs);
       String[] cmd = StringReplacer.formatAndSplit(pattern, prefs, true);
       return executeUploadCommand(cmd);
-    } catch (RunnerException e) {
-      throw e;
-    } catch (Exception e) {
-      throw new RunnerException(e);
     }
   }
 
