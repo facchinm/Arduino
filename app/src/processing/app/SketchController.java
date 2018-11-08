@@ -27,6 +27,7 @@ import cc.arduino.Compiler;
 import cc.arduino.CompilerProgressListener;
 import cc.arduino.UploaderUtils;
 import cc.arduino.packages.Uploader;
+import cc.arduino.packages.uploaders.MissingSerialPortException;
 import processing.app.debug.RunnerException;
 import processing.app.forms.PasswordAuthorizationDialog;
 import processing.app.helpers.FileUtils;
@@ -734,6 +735,9 @@ public class SketchController {
       List<String> warningsAccumulator = new LinkedList<>();
       try {
         success = uploaderInstance.upload(sketch, uploader, suggestedClassName, usingProgrammer, false, warningsAccumulator);
+      } catch (MissingSerialPortException e) {
+        editor.statusError(tr("Please select a Port before Upload"));
+        return false;
       } finally {
         if (uploader.requiresAuthorization() && !success) {
           PreferencesData.remove(uploader.getAuthorizationKey());

@@ -51,14 +51,24 @@ import static processing.app.I18n.tr;
 
 public class SerialUploader extends Uploader {
 
+  private BoardPort boardPort;
+
   public SerialUploader()
   {
     super();
+    this.boardPort = BaseNoGui.getDiscoveryManager().find(PreferencesData.get("serial.port"));
   }
 
-  public SerialUploader(boolean noUploadPort)
+  public SerialUploader(BoardPort port)
+  {
+    super();
+    this.boardPort = port;
+  }
+
+  public SerialUploader(BoardPort port, boolean noUploadPort)
   {
     super(noUploadPort);
+    this.boardPort = port;
   }
 
   @Override
@@ -108,6 +118,7 @@ public class SerialUploader extends Uploader {
       boolean uploadResult;
       try {
         String pattern = prefs.getOrExcept("upload.pattern");
+        validatePattern(pattern, prefs);
         String[] cmd = StringReplacer.formatAndSplit(pattern, prefs, true);
         uploadResult = executeUploadCommand(cmd);
       } catch (Exception e) {
@@ -178,9 +189,9 @@ public class SerialUploader extends Uploader {
       Thread.sleep(100);
       BaseNoGui.getDiscoveryManager().getSerialDiscoverer().forceRefresh();
       Thread.sleep(100);
+      boardPort = BaseNoGui.getDiscoveryManager().find(PreferencesData.get("serial.port"));
     }
 
-    BoardPort boardPort = BaseNoGui.getDiscoveryManager().find(PreferencesData.get("serial.port"));
     try {
       prefs.put("serial.port.iserial", boardPort.getPrefs().getOrExcept("iserial"));
     } catch (Exception e) {
@@ -203,6 +214,7 @@ public class SerialUploader extends Uploader {
     boolean uploadResult;
     try {
       String pattern = prefs.getOrExcept("upload.pattern");
+      validatePattern(pattern, prefs);
       String[] cmd = StringReplacer.formatAndSplit(pattern, prefs, true);
       uploadResult = executeUploadCommand(cmd);
     } catch (RunnerException e) {
@@ -251,7 +263,13 @@ public class SerialUploader extends Uploader {
     return uploadResult;
   }
 
-  private String waitForUploadPort(String uploadPort, List<String> before) throws InterruptedException, RunnerException {
+  private void validatePattern(String pattern, PreferencesMap prefs) throws MissingSerialPortException {
+	if (pattern.contains("serial.port") && boardPort == null) {
+		throw new MissingSerialPortException();
+	}
+  }
+
+private String waitForUploadPort(String uploadPort, List<String> before) throws InterruptedException, RunnerException {
     // Wait for a port to appear on the list
     int elapsed = 0;
     while (elapsed < 10000) {
@@ -339,6 +357,7 @@ public class SerialUploader extends Uploader {
       // }
 
       String pattern = prefs.getOrExcept("program.pattern");
+      validatePattern(pattern, prefs);
       String[] cmd = StringReplacer.formatAndSplit(pattern, prefs, true);
       return executeUploadCommand(cmd);
     } catch (RunnerException e) {
@@ -403,11 +422,13 @@ public class SerialUploader extends Uploader {
     new LoadVIDPIDSpecificPreferences().load(prefs);
 
     String pattern = prefs.getOrExcept("erase.pattern");
+    validatePattern(pattern, prefs);
     String[] cmd = StringReplacer.formatAndSplit(pattern, prefs, true);
     if (!executeUploadCommand(cmd))
       return false;
 
     pattern = prefs.getOrExcept("bootloader.pattern");
+    validatePattern(pattern, prefs);
     cmd = StringReplacer.formatAndSplit(pattern, prefs, true);
     return executeUploadCommand(cmd);
   }

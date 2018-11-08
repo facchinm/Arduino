@@ -38,7 +38,7 @@ public class UploaderFactory {
 
   public Uploader newUploader(TargetBoard board, BoardPort port, boolean noUploadPort) {
     if (noUploadPort) {
-      return new SerialUploader(true);
+      return new SerialUploader(port, true);
     }
 
     if (port != null && "network".equals(port.getProtocol())) {
@@ -48,7 +48,7 @@ public class UploaderFactory {
       return new SSHUploader(port);
     }
 
-    return new SerialUploader();
+    return new SerialUploader(port);
   }
 
 }
