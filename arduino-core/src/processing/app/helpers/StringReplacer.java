@@ -21,20 +21,23 @@
  */
 package processing.app.helpers;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Function;
+import java.util.function.Predicate;
 
 public class StringReplacer {
 
   public static String[] formatAndSplit(String src, Map<String, String> dict,
-                                        boolean recursive) throws Exception {
-    String res;
+          boolean recursive, CheckedFunction<String, Boolean> p) throws Exception, IOException {
+	String res;
 
-    // Recursive replace with a max depth of 10 levels.
+	// Recursive replace with a max depth of 10 levels.
     for (int i = 0; i < 10; i++) {
       // Do a replace with dictionary
-      res = StringReplacer.replaceFromMapping(src, dict);
+      res = StringReplacer.replaceFromMapping(src, dict, p);
       if (!recursive)
         break;
       if (res.equals(src))
@@ -44,8 +47,12 @@ public class StringReplacer {
 
     // Split the resulting string in arguments
     return quotedSplit(src, "\"'", false);
-  }
+  }	  
 
+  public static String[] formatAndSplit(String src, Map<String, String> dict,
+          boolean recursive) throws Exception, IOException {
+	  return formatAndSplit(src, dict, recursive, null);
+  }
   public static String[] quotedSplit(String src, String quoteChars,
                                      boolean acceptEmptyArguments)
       throws Exception {
@@ -86,19 +93,38 @@ public class StringReplacer {
   }
 
   public static String replaceFromMapping(String src, Map<String, String> map) {
-    return replaceFromMapping(src, map, "{", "}");
+	return replaceFromMapping(src, map, "{", "}");
+  }
+
+  public static String replaceFromMapping(String src, Map<String, String> map, CheckedFunction<String, Boolean> p) throws IOException {
+    return replaceFromMapping(src, map, "{", "}", p);
   }
 
   public static String replaceFromMapping(String src, Map<String, String> map,
-                                          String leftDelimiter,
-                                          String rightDelimiter) {
+          String leftDelimiter,
+          String rightDelimiter) {
     for (Map.Entry<String, String> entry : map.entrySet()) {
       String keyword = leftDelimiter + entry.getKey() + rightDelimiter;
       if (entry.getValue() != null && keyword != null) {
-          src = src.replace(keyword, entry.getValue());
+        src = src.replace(keyword, entry.getValue());
       }
     }
     return src;
   }
 
+  public static String replaceFromMapping(String src, Map<String, String> map,
+                                          String leftDelimiter,
+                                          String rightDelimiter, CheckedFunction<String, Boolean> p) throws IOException {
+    for (Map.Entry<String, String> entry : map.entrySet()) {
+      String keyword = leftDelimiter + entry.getKey() + rightDelimiter;
+      if (entry.getValue() != null && keyword != null) {
+    	  String oldsrc = new String(src);
+          src = src.replace(keyword, entry.getValue());
+          if (p != null && !oldsrc.equals(src)) {
+        	  p.apply(keyword);
+          }
+      }
+    }
+    return src;
+  }
 }

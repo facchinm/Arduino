@@ -41,11 +41,15 @@ import cc.arduino.packages.BoardPort;
 import processing.app.debug.RunnerException;
 import processing.app.debug.TargetPlatform;
 import processing.app.helpers.PreferencesMap;
+import processing.app.helpers.PreferencesMapException;
 import processing.app.helpers.StringReplacer;
 
 import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
+import java.util.function.Predicate;
 
 import static processing.app.I18n.tr;
 
@@ -53,10 +57,25 @@ public class SerialUploader extends Uploader {
 
   private BoardPort boardPort;
 
+  private boolean testExcept(String t) throws PreferencesMapException {
+	String port = PreferencesData.get("serial.port");
+	if (t.contains("serial.port") && (port == null || port.isEmpty())) {
+		throw new MissingSerialPortException("");
+    }
+	return true;
+  }
+
   public SerialUploader()
   {
     super();
-    this.boardPort = BaseNoGui.getDiscoveryManager().find(PreferencesData.get("serial.port"));
+    String port = PreferencesData.get("serial.port");
+    if (port != null && !port.isEmpty()) {
+      boardPort = BaseNoGui.getDiscoveryManager().find(port);
+    } else {
+  	  // bogus values to find if the port was actually needed
+  	  boardPort = new BoardPort();
+  	  boardPort.setAddress("__BOGUS_SERIALPORT_NAME__");
+    }
   }
 
   public SerialUploader(BoardPort port)
@@ -118,8 +137,7 @@ public class SerialUploader extends Uploader {
       boolean uploadResult;
       try {
         String pattern = prefs.getOrExcept("upload.pattern");
-        validatePattern(pattern, prefs);
-        String[] cmd = StringReplacer.formatAndSplit(pattern, prefs, true);
+        String[] cmd = StringReplacer.formatAndSplit(pattern, prefs, true, this::testExcept);
         uploadResult = executeUploadCommand(cmd);
       } finally {
         BaseNoGui.getDiscoveryManager().getSerialDiscoverer().pausePolling(false);
@@ -212,8 +230,7 @@ public class SerialUploader extends Uploader {
     boolean uploadResult;
     try {
       String pattern = prefs.getOrExcept("upload.pattern");
-      validatePattern(pattern, prefs);
-      String[] cmd = StringReplacer.formatAndSplit(pattern, prefs, true);
+      String[] cmd = StringReplacer.formatAndSplit(pattern, prefs, true, this::testExcept);
       uploadResult = executeUploadCommand(cmd);
     } finally {
       BaseNoGui.getDiscoveryManager().getSerialDiscoverer().pausePolling(false);
@@ -255,12 +272,6 @@ public class SerialUploader extends Uploader {
     BaseNoGui.selectSerialPort(finalUploadPort);
 
     return uploadResult;
-  }
-
-  private void validatePattern(String pattern, PreferencesMap prefs) throws MissingSerialPortException {
-	if (pattern.contains("serial.port") && boardPort == null) {
-		throw new MissingSerialPortException();
-	}
   }
 
 private String waitForUploadPort(String uploadPort, List<String> before) throws InterruptedException, RunnerException {
@@ -343,18 +354,15 @@ private String waitForUploadPort(String uploadPort, List<String> before) throws 
     else
       prefs.put("program.verify", prefs.get("program.params.noverify", ""));
 
-    try {
-      // if (prefs.get("program.disable_flushing") == null
-      // || prefs.get("program.disable_flushing").toLowerCase().equals("false"))
-      // {
-      // flushSerialBuffer();
-      // }
+    // if (prefs.get("program.disable_flushing") == null
+    // || prefs.get("program.disable_flushing").toLowerCase().equals("false"))
+    // {
+    // flushSerialBuffer();
+    // }
 
-      String pattern = prefs.getOrExcept("program.pattern");
-      validatePattern(pattern, prefs);
-      String[] cmd = StringReplacer.formatAndSplit(pattern, prefs, true);
-      return executeUploadCommand(cmd);
-    }
+    String pattern = prefs.getOrExcept("program.pattern");
+    String[] cmd = StringReplacer.formatAndSplit(pattern, prefs, true, this::testExcept);
+    return executeUploadCommand(cmd);
   }
 
   @Override
@@ -412,14 +420,12 @@ private String waitForUploadPort(String uploadPort, List<String> before) throws 
     new LoadVIDPIDSpecificPreferences().load(prefs);
 
     String pattern = prefs.getOrExcept("erase.pattern");
-    validatePattern(pattern, prefs);
-    String[] cmd = StringReplacer.formatAndSplit(pattern, prefs, true);
+    String[] cmd = StringReplacer.formatAndSplit(pattern, prefs, true, this::testExcept);
     if (!executeUploadCommand(cmd))
       return false;
 
     pattern = prefs.getOrExcept("bootloader.pattern");
-    validatePattern(pattern, prefs);
-    cmd = StringReplacer.formatAndSplit(pattern, prefs, true);
+    cmd = StringReplacer.formatAndSplit(pattern, prefs, true, this::testExcept);
     return executeUploadCommand(cmd);
   }
 }
