@@ -41,15 +41,29 @@ import cc.arduino.packages.BoardPort;
 import processing.app.debug.RunnerException;
 import processing.app.debug.TargetPlatform;
 import processing.app.helpers.PreferencesMap;
+import processing.app.helpers.PreferencesMapException;
 import processing.app.helpers.StringReplacer;
 
 import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
+import java.util.function.Predicate;
 
 import static processing.app.I18n.tr;
 
 public class SerialUploader extends Uploader {
+
+  private BoardPort boardPort;
+
+  private boolean testExcept(String t) throws PreferencesMapException {
+	String port = PreferencesData.get("serial.port");
+	if (t.contains("serial.port") && (port == null || port.isEmpty())) {
+		throw new MissingSerialPortException("");
+    }
+	return true;
+  }
 
   public SerialUploader()
   {
@@ -108,10 +122,8 @@ public class SerialUploader extends Uploader {
       boolean uploadResult;
       try {
         String pattern = prefs.getOrExcept("upload.pattern");
-        String[] cmd = StringReplacer.formatAndSplit(pattern, prefs, true);
+        String[] cmd = StringReplacer.formatAndSplit(pattern, prefs, true, this::testExcept);
         uploadResult = executeUploadCommand(cmd);
-      } catch (Exception e) {
-        throw new RunnerException(e);
       } finally {
         BaseNoGui.getDiscoveryManager().getSerialDiscoverer().pausePolling(false);
       }
@@ -181,6 +193,7 @@ public class SerialUploader extends Uploader {
     }
 
     BoardPort boardPort = BaseNoGui.getDiscoveryManager().find(PreferencesData.get("serial.port"));
+
     try {
       prefs.put("serial.port.iserial", boardPort.getPrefs().getOrExcept("iserial"));
     } catch (Exception e) {
@@ -203,12 +216,8 @@ public class SerialUploader extends Uploader {
     boolean uploadResult;
     try {
       String pattern = prefs.getOrExcept("upload.pattern");
-      String[] cmd = StringReplacer.formatAndSplit(pattern, prefs, true);
+      String[] cmd = StringReplacer.formatAndSplit(pattern, prefs, true, this::testExcept);
       uploadResult = executeUploadCommand(cmd);
-    } catch (RunnerException e) {
-      throw e;
-    } catch (Exception e) {
-      throw new RunnerException(e);
     } finally {
       BaseNoGui.getDiscoveryManager().getSerialDiscoverer().pausePolling(false);
     }
@@ -251,7 +260,7 @@ public class SerialUploader extends Uploader {
     return uploadResult;
   }
 
-  private String waitForUploadPort(String uploadPort, List<String> before) throws InterruptedException, RunnerException {
+private String waitForUploadPort(String uploadPort, List<String> before) throws InterruptedException, RunnerException {
     // Wait for a port to appear on the list
     int elapsed = 0;
     while (elapsed < 10000) {
@@ -331,21 +340,15 @@ public class SerialUploader extends Uploader {
     else
       prefs.put("program.verify", prefs.get("program.params.noverify", ""));
 
-    try {
-      // if (prefs.get("program.disable_flushing") == null
-      // || prefs.get("program.disable_flushing").toLowerCase().equals("false"))
-      // {
-      // flushSerialBuffer();
-      // }
+    // if (prefs.get("program.disable_flushing") == null
+    // || prefs.get("program.disable_flushing").toLowerCase().equals("false"))
+    // {
+    // flushSerialBuffer();
+    // }
 
-      String pattern = prefs.getOrExcept("program.pattern");
-      String[] cmd = StringReplacer.formatAndSplit(pattern, prefs, true);
-      return executeUploadCommand(cmd);
-    } catch (RunnerException e) {
-      throw e;
-    } catch (Exception e) {
-      throw new RunnerException(e);
-    }
+    String pattern = prefs.getOrExcept("program.pattern");
+    String[] cmd = StringReplacer.formatAndSplit(pattern, prefs, true, this::testExcept);
+    return executeUploadCommand(cmd);
   }
 
   @Override
@@ -403,12 +406,12 @@ public class SerialUploader extends Uploader {
     new LoadVIDPIDSpecificPreferences().load(prefs);
 
     String pattern = prefs.getOrExcept("erase.pattern");
-    String[] cmd = StringReplacer.formatAndSplit(pattern, prefs, true);
+    String[] cmd = StringReplacer.formatAndSplit(pattern, prefs, true, this::testExcept);
     if (!executeUploadCommand(cmd))
       return false;
 
     pattern = prefs.getOrExcept("bootloader.pattern");
-    cmd = StringReplacer.formatAndSplit(pattern, prefs, true);
+    cmd = StringReplacer.formatAndSplit(pattern, prefs, true, this::testExcept);
     return executeUploadCommand(cmd);
   }
 }

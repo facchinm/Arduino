@@ -382,6 +382,8 @@ public class Compiler implements MessageConsumer {
       Files.copy(compiledSketchPath, copyOfCompiledSketchFilePath, StandardCopyOption.REPLACE_EXISTING);
     } catch (IOException e) {
       throw new RunnerException(e);
+    } catch (Exception e) {
+      throw new RunnerException(e);
     }
   }
 
