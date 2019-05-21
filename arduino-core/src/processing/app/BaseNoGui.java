@@ -26,6 +26,7 @@ import org.apache.commons.logging.impl.NoOpLog;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 
+import cc.arduino.BackendClient;
 import cc.arduino.Constants;
 import cc.arduino.contributions.GPGDetachedSignatureVerifier;
 import cc.arduino.contributions.SignatureVerificationFailedException;
@@ -129,6 +130,8 @@ public class BaseNoGui {
   static public Map<String, TargetPackage> packages;
 
   static Platform platform;
+  
+  static BackendClient _backend;
 
   static File portableFolder = null;
   static final String portableSketchbookFolder = "sketchbook";
@@ -243,6 +246,13 @@ public class BaseNoGui {
     return getContentFile("arduino-cli").getAbsolutePath();
   }
 
+  static public BackendClient backend() throws IOException {
+	  if (_backend == null) {
+		  _backend = new BackendClient();
+	  }
+	  return _backend;
+  }
+  
   static public TargetPlatform getCurrentTargetPlatformFromPackage(String pack) {
     return getTargetPlatform(pack, PreferencesData.get("target_platform"));
   }
