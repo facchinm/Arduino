@@ -256,6 +256,10 @@ public class Compiler implements MessageConsumer {
       cmd.add("-vid-pid=" + vidpid);
     }
 
+    if (PreferencesData.getBoolean("build.singlethread") == true) {
+      cmd.add("-jobs=1");
+    }
+
     cmd.add("-ide-version=" + BaseNoGui.REVISION);
     cmd.add("-build-path");
     cmd.add(buildPath);

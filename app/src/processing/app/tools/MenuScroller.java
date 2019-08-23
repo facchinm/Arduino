@@ -8,6 +8,9 @@ import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import javax.swing.event.PopupMenuEvent;
 import javax.swing.event.PopupMenuListener;
+
+import processing.app.PreferencesData;
+
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -576,12 +579,14 @@ public class MenuScroller {
     implements ChangeListener {
 
     private final MenuScrollTimer timer;
+    private int incrementSign;
 
     public MenuScrollItem(MenuIcon icon, int increment) {
       setIcon(icon);
       setDisabledIcon(icon);
       timer = new MenuScrollTimer(increment, interval);
       addChangeListener(this);
+      incrementSign = increment / Math.abs(increment);
     }
 
     public void setInterval(int interval) {
@@ -590,6 +595,16 @@ public class MenuScroller {
 
     @Override
     public void stateChanged(ChangeEvent e) {
+      if (PreferencesData.getBoolean("ide.accessible")) {
+        if (isArmed()) {
+          //scroll the list to the top and select first element
+          firstIndex += scrollCount * incrementSign;
+          System.out.println(menuItems[firstIndex + 4]);
+          menu.setSelected(menuItems[firstIndex + 4]);
+          refreshMenu();
+          return;
+        }
+      }
       if (isArmed() && !timer.isRunning()) {
         timer.start();
       }
