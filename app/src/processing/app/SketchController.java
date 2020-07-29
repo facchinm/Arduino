@@ -36,6 +36,9 @@ import processing.app.packages.LibraryList;
 import processing.app.packages.UserLibrary;
 
 import javax.swing.*;
+
+import org.apache.commons.lang3.StringUtils;
+
 import java.awt.*;
 import java.io.File;
 import java.io.IOException;
@@ -65,6 +68,7 @@ public class SketchController {
   }
 
   private boolean renamingCode;
+  private String defaultExtension ;
 
   /**
    * Handler for the New Code menu option.
@@ -85,10 +89,33 @@ public class SketchController {
     }
 
     renamingCode = false;
+    defaultExtension = Sketch.DEFAULT_SKETCH_EXTENSION;
     editor.status.edit(tr("Name for new file:"), "");
   }
 
+  /**
+   * Handler for the New Code menu option.
+   */
+  public void handleNewThread() {
+    editor.status.clearState();
+    // make sure the user didn't hide the sketch folder
+    ensureExistence();
 
+    // if read-only, give an error
+    if (isReadOnly()) {
+      // if the files are read-only, need to first do a "save as".
+      Base.showMessage(tr("Sketch is Read-Only"),
+                       tr("Some files are marked \"read-only\", so you'll\n" +
+                         "need to re-save the sketch in another location,\n" +
+                         "and try again."));
+      return;
+    }
+
+    renamingCode = false;
+    defaultExtension = "inot";
+    editor.status.edit(tr("Name for new file:"), "");
+  }
+  
   /**
    * Handler for the Rename Code menu option.
    */
@@ -148,7 +175,7 @@ public class SketchController {
 
     FileUtils.SplitFile split = FileUtils.splitFilename(newName);
     if (split.extension.equals(""))
-      split.extension = Sketch.DEFAULT_SKETCH_EXTENSION;
+      split.extension = defaultExtension;
 
     if (!Sketch.EXTENSIONS.contains(split.extension.toLowerCase())) {
       String msg = I18n.format(tr("\".{0}\" is not a valid extension."),
@@ -207,6 +234,9 @@ public class SketchController {
         Base.showWarning(tr("Error"), e.getMessage(), null);
         return;
       }
+      if (newName.endsWith("inot")) {
+        editor.findTab(file).setText(getBareMinimum());
+      }
       editor.selectTab(editor.findTabIndex(file));
     }
 
@@ -214,6 +244,24 @@ public class SketchController {
     editor.header.rebuild();
   }
 
+  private String getBareMinimum() {
+    String sketch;
+    try {
+      sketch = FileUtils.readFileToString(new File(
+          BaseNoGui.getContentFile("examples"), "01.Basics" + File.separator + "BareMinimum"
+                                      + File.separator + "BareMinimum.ino"));
+      String currentTab = "  ";
+      String newTab = (PreferencesData
+          .getBoolean("editor.tabs.expand") ? StringUtils.repeat(" ", PreferencesData.getInteger("editor.tabs.size")) : "\t");
+      sketch = sketch.replaceAll("(?<=(^|\n)(" + currentTab + "){0,50})" + currentTab,
+                      newTab);
+      return sketch;
+    } catch (IOException e) {
+      // TODO Auto-generated catch block
+      e.printStackTrace();
+    }
+    return "";
+  }
 
   /**
    * Remove a piece of code from the sketch and from the disk.

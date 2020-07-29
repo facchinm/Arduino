@@ -91,6 +91,9 @@ public class EditorHeader extends JComponent {
         Keys.ctrlShift(KeyEvent.VK_N),
         () -> editor.getSketchController().handleNewCode());
 
+    public final Action newThread = new SimpleAction(tr("New Arduino Thread"),
+        () -> editor.getSketchController().handleNewThread());
+
     public final Action renameTab = new SimpleAction(tr("Rename"),
         () -> editor.getSketchController().handleRenameCode());
 
@@ -113,6 +116,7 @@ public class EditorHeader extends JComponent {
       // Normally, this happens automatically for any actions bound to menu
       // items, but only for menus attached to a window, not for popup menus.
       Keys.bind(EditorHeader.this, newTab);
+      Keys.bind(EditorHeader.this, newThread);
       Keys.bind(EditorHeader.this, prevTab);
       Keys.bind(EditorHeader.this, nextTab);
 
@@ -314,6 +318,7 @@ public class EditorHeader extends JComponent {
     JMenuItem item;
 
     menu.add(new JMenuItem(actions.newTab));
+    menu.add(new JMenuItem(actions.newThread));
     menu.add(new JMenuItem(actions.renameTab));
     menu.add(new JMenuItem(actions.deleteTab));
     menu.addSeparator();
