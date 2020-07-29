@@ -236,6 +236,13 @@ public class SketchController {
       }
       if (newName.endsWith("inot")) {
         editor.findTab(file).setText(getBareMinimum());
+        EditorTab variables = editor.getTabs().stream()
+            .filter(tab -> "SharedVariables.h".equals(tab.getName()))
+            .findAny()
+            .orElse(null);
+        if (variables == null) {
+          nameCode("SharedVariables.h");
+        }
       }
       editor.selectTab(editor.findTabIndex(file));
     }
